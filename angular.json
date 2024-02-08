@@ -93,7 +93,10 @@
               "src/styles.css",
               "src/assets/Cesium/Widgets/widgets.css"
             ],
-            "scripts": ["src/assets/Cesium/Cesium.js"]
+            "scripts": [
+              "src/assets/Cesium/Cesium.js"
+            ],
+            "karmaConfig": "karma.conf.js"
           }
         },
         "deploy": {
