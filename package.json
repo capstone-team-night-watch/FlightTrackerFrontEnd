@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "typedoc": "typedoc --exclude **/*.spec.ts --out docs --entryPointStrategy expand ./src/app",
-    "coverage": "ng test --no-watch --code-coverage"
+    "coverage": "ng test --no-watch --code-coverage",
+    "sonar": "sonar-scanner -Dsonar.projectKey=CapstoneFrontEnd"
   },
   "private": true,
   "dependencies": {
