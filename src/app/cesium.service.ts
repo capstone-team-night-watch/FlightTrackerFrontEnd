@@ -13,11 +13,14 @@ import {
   FlightDataIdent,
   Operator,
 } from './objects/aero-api/flight-data';
-import { Entity, Ion, Viewer } from 'cesium';
-import * as Cesium from 'cesium';
+
+// import { Entity, Ion, Viewer } from 'cesium';
+// import * as Cesium from 'cesium';
+
+declare var Cesium: any;
 
 // TODO: Consider hiding this api token so it is not stored on the front-end
-Ion.defaultAccessToken =
+Cesium.Ion.defaultAccessToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjNzIyMjA2MC02ZDY2LTQ1YmUtYjc0Yi05MzFhY2ViZWNkMWUiLCJpZCI6MTIzOTU4LCJpYXQiOjE2NzU4OTY5MzV9.iWKvQ4p-2joQPJ4o3vMeT3HDeBkyKb5ijeA87NEppa4';
 
 @Injectable({
@@ -108,12 +111,12 @@ export class CesiumService {
     // Setting up viewer. Checks to make sure it doesn't exist before creating a new one
     Cesium.Math.setRandomNumberSeed(1234);
     if (this.global_viewer == null || this.global_viewer == undefined) {
-      this.global_viewer = new Viewer(div, {
+      this.global_viewer = new Cesium.Viewer(div, {
         animation: false,
         timeline: false,
       });
       this.entities = this.global_viewer.entities;
-      this.ellipsoids = this.entities.add(new Entity());
+      this.ellipsoids = this.entities.add(new Cesium.Entity());
       this.rectangles = this.entities.add(new Cesium.Entity());
       this.polygons = this.entities.add(new Cesium.Entity());
       this.militaryBases = this.entities.add(new Cesium.Entity());
