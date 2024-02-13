@@ -1,6 +1,0 @@
-projectKey=CapstoneFrontEnd
-serverUrl=https://sonar.flighttracker.online
-serverVersion=10.3.0.82913
-dashboardUrl=https://sonar.flighttracker.online/dashboard?id=CapstoneFrontEnd
-ceTaskId=AY2grUmF7NhlQ0zaflae
-ceTaskUrl=https://sonar.flighttracker.online/api/ce/task?id=AY2grUmF7NhlQ0zaflae
