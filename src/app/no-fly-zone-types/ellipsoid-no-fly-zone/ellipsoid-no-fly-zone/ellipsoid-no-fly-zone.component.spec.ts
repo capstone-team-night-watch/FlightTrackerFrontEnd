@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EllipsoidNoFlyZoneComponent } from './ellipsoid-no-fly-zone.component';
+import { AppModule } from 'src/app/app.module';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 describe('EllipsoidNoFlyZoneComponent', () => {
   let component: EllipsoidNoFlyZoneComponent;
@@ -8,7 +10,18 @@ describe('EllipsoidNoFlyZoneComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ EllipsoidNoFlyZoneComponent ]
+      declarations: [ EllipsoidNoFlyZoneComponent ],
+      imports: [AppModule],
+      providers: [
+        {
+          provide: MatDialogRef,
+          useValue: {},
+        },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {},
+        },
+      ],
     })
     .compileComponents();
 

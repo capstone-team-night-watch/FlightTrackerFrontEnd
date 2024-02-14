@@ -33,7 +33,7 @@ jobs:
         run: npm install 
 
       - name: Run test and Generate Coverage Report 
-        run: npm run coverage || echo "Ignoring test failures; Should be updated in the future"
+        run: npm run coverage 
 
       - name: Update SonarCloud Code Report
         run: npm run sonar 
