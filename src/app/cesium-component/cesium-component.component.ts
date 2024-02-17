@@ -32,7 +32,7 @@ export class CesiumComponentComponent implements OnInit {
     //console.log("CESIUM SERVICE: " + this.cesium);
 
     // this.socket.connectToConsumer(this.cesium.flyToAndPlotPoint)
-    this.socket.connectToConsumer();
+    // this.socket.connectToConsumer();
   }
 
   hideEllip() {

@@ -12,6 +12,11 @@ module.exports = function (config) {
       require("karma-coverage"),
       require("@angular-devkit/build-angular/plugins/karma"),
     ],
+    files: [
+      "src/*.(js|html)",
+      "src/app/**/**",
+      require("path").join(__dirname, "./src/polyfills.ts"),
+    ],
     client: {
       jasmine: {
         // you can add configuration options for Jasmine here
