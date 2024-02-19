@@ -62,4 +62,4 @@ jobs:
           docker tag flight-tracker-frontend:latest ewagner2802/flighttrackerfrontend:${BUILD_NUMBER}
           docker tag flight-tracker-frontend:latest ewagner2802/flighttrackerfrontend:latest
 
-          docker push ewagner2802/flighttrackerfrontend
+          docker push ewagner2802/flighttrackerfrontend --all-tags
