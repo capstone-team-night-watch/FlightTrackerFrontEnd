@@ -11,11 +11,10 @@ env:
 
 on:
   push:
-    branches: [ "master", "main" ]
+    branches: ["master", "main", "**"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -24,16 +23,38 @@ jobs:
       - name: Cache npm dependencies
         uses: actions/cache@v4
         with:
-          path: '~/.npm'
+          path: "~/.npm"
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-        
-      - name: Install dependencies
-        run: npm install 
 
-      - name: Run test and Generate Coverage Report 
-        run: npm run coverage 
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run test and Generate Coverage Report
+        run: npm run coverage
 
       - name: Update SonarCloud Code Report
-        run: npm run sonar 
+        run: npm run sonar
+
+      - name: Extract project version
+        run : |
+          BUILD_NUMBER=$(node -p -e "require('./package.json').version")
+          echo "BUILD_NUMBER=${BUILD_NUMBER}" >> $GITHUB_ENV 
+          echo "Extracted Build Number: ${BUILD_NUMBER}"
+
+      - name: Build angular project
+        run: npm run build
+
+      - name: Build Docker Image
+        run: |
+          docker build -t flight-tracker-frontend:latest .
+
+      - name: Authenticate to dockerhub
+        run : |
+          docker login -u ewagner2802 --password $DOCKERHUB_ACCESS_TOKEN
+
+      - name: Build and Publish Docker Image to dockerhub
+        run : |
+          docker tag flight-tracker-frontend:latest ewagner2802/flighttrackerfrontend:${BUILD_NUMBER}
+          docker push ewagner2802/flighttrackerfrontend:${BUILD_NUMBER}
