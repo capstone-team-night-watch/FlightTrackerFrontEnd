@@ -13,11 +13,9 @@ import {
   FlightDataIdent,
   Operator,
 } from './objects/aero-api/flight-data';
+import { Url } from './utils/url';
 
-// import { Entity, Ion, Viewer } from 'cesium';
-// import * as Cesium from 'cesium';
-
-declare var Cesium: any;
+declare const Cesium: any;
 
 // TODO: Consider hiding this api token so it is not stored on the front-end
 Cesium.Ion.defaultAccessToken =
@@ -177,7 +175,7 @@ export class CesiumService {
     queryParams = queryParams.append('zoneName', zoneName);
 
     this.httpClient
-      .get<string>('http://34.198.166.4:9093/deleteNoFlyZone', {
+      .get<string>(Url.consumer("/deleteNoFlyZone"), {
         headers: this.httpHeaders,
         params: queryParams,
       })
@@ -227,7 +225,7 @@ export class CesiumService {
 
     return this.httpClient
       .get<getNoFlyZonesConflictResponse>(
-        'http://34.198.166.4:9093/getInNoFlyZone',
+        Url.consumer('/getInNoFlyZone'),
         {
           headers: this.httpHeaders,
           params: queryParams,
@@ -251,7 +249,7 @@ export class CesiumService {
 
     return this.httpClient
       .get<GetFlightLocationResponse>(
-        'http://34.198.166.4:9093/getFlightLocation',
+        Url.consumer('/getFlightLocation'),
         {
           headers: this.httpHeaders,
           params: queryParams,
@@ -332,7 +330,7 @@ export class CesiumService {
 
     this.httpClient
       .get<GetNoFlyZonesResponse>(
-        'http://34.198.166.4:9093/get-no-fly-zones',
+        Url.consumer('/get-no-fly-zones'),
         this.httpOptions
       )
       .subscribe((data) => {
@@ -578,7 +576,7 @@ export class CesiumService {
         if (this.aeroFlightFaIdResponse && flightFaIdRespObj != null) {
           this.httpClient
             .get<FlightDataIdent>(
-              'http://34.198.166.4/flightident/' + flightIdent_Icao,
+              Url.producer('/flightident/') + flightIdent_Icao,
               this.httpOptions
             )
             .subscribe((flightResponse) => {
@@ -586,7 +584,7 @@ export class CesiumService {
               if (this.aeroFlightIdentResponse) {
                 this.httpClient
                   .get<Operator>(
-                    'http://34.198.166.4/operator/' +
+                    Url.producer('/operator/') +
                       this.aeroFlightIdentResponse.operator,
                     this.httpOptions
                   )
