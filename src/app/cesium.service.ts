@@ -482,6 +482,44 @@ export class CesiumService {
   }
 
 
+  public getAndLoadTfrNoFlyZones(): void {
+    console.log('Loading TFR No FlyZones');
+
+    this.httpClient
+      .get<GetNoFlyZonesResponse>(
+        Url.consumer('/addNoFlyZone/rectangle'),
+        this.httpOptions
+      )
+      .subscribe((data) => {
+        this.getNoFlyZoneResponse = data;
+
+        console.log('TFR NO FLY ZONES')
+        for (const tfrNoFly of this.getNoFlyZoneResponse
+          .tfrNoFlyZones) {
+          let contains: boolean = false;
+          this.global_viewer.entities.values.forEach((element: any) => {
+            if (element.notamNumber == tfrNoFly.notamNumber) {
+              contains = true;
+            }
+          });
+
+          if (!contains) {
+
+            this.global_viewer.entities.add({
+              parent: this.ellipsoids,
+              name: tfrNoFly.notamNumber,
+              position: Cesium.Cartesian3.fromDegreesArray(
+                tfrNoFly.latlong
+              ),
+            });
+            //console.log(ellipsoidNoFly)
+          }
+        }
+        
+      });
+  }
+
+
   flyToAndPlotPoint(
     longitude: number,
     latitude: number,
