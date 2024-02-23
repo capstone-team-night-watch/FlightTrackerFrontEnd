@@ -1,4 +1,4 @@
 export const environment = {
-    consumerBaseUrl: 'http://localhost:8060',
-    producerBaseUrl : 'http://localhost:8080',
+    consumerBaseUrl: 'http://localhost:9093',
+    producerBaseUrl : 'http://localhost:9000',
 };
