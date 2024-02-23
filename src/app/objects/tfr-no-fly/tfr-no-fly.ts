@@ -3,7 +3,7 @@ export class TfrNoFly {
     notamNumber: string;
     notamType: string;
     latlong: Number[];
-    radius: string;
+    radius: number;
     startTime: string;
     endTime: string;
 }
