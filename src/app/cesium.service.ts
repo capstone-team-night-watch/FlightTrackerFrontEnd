@@ -16,6 +16,8 @@ import {
 import { Url } from './utils/url';
 import { TfrNoFly } from './objects/tfr-no-fly/tfr-no-fly';
 
+import { PlaceholderRepository } from './objects/placeholder-repository/placeholder-repository';//PLACEHOLDER
+
 declare const Cesium: any;
 
 // TODO: Consider hiding this api token so it is not stored on the front-end
@@ -83,6 +85,8 @@ export class CesiumService {
   aeroFlightFaIdResponse: FlightDataFa_Id;
   aeroOperatorResponse: Operator;
 
+  placeholderRepository: PlaceholderRepository = new PlaceholderRepository();//PLACEHOLDER
+  
   public updateFlightsAndZones(
     div: string,
     longitude: number,
@@ -171,6 +175,19 @@ export class CesiumService {
     }
   }
 
+  public addEllipsoidNoFlyZone(noFlyIn: any) {
+    this.placeholderRepository.addEllipsoidNoFlyZone(noFlyIn);
+    this.getAndLoadNoFlyZones();
+  }
+
+  public addRectangleNoFlyZone(noFlyIn: any) {
+    this.placeholderRepository.addRectangleNoFlyZone(noFlyIn);
+  }
+
+  public addPolygonNoFlyZone(noFlyIn: any) {
+    this.placeholderRepository.addPolygonNoFlyZone(noFlyIn);
+  }
+
   public deleteNoFlyZone() {
     let entity = this.global_viewer.selectedEntity.id;
     let zoneName = this.global_viewer.selectedEntity.name;
@@ -179,6 +196,10 @@ export class CesiumService {
     let queryParams = new HttpParams();
     queryParams = queryParams.append('zoneName', zoneName);
 
+    //PLACEHOLDER
+    this.placeholderRepository.deleteNoFlyZone(zoneName);
+    //THE ABOVE IS A PLACEHOLDER FOR THE FOLLOWING COMMENTED-OUT CODE
+    /*
     this.httpClient
       .get<string>(Url.consumer("/deleteNoFlyZone"), {
         headers: this.httpHeaders,
@@ -187,6 +208,7 @@ export class CesiumService {
       .subscribe((response) => {
         console.log('Getting RESPONSE ' + response);
       });
+      */
   }
 
   public flyToNoFlyZone(zoneName: string) {
@@ -333,6 +355,11 @@ export class CesiumService {
   public getAndLoadNoFlyZones(): void {
     console.log('Loading No FlyZones');
 
+    //PLACEHOLDER
+    //this.placeholderRepository.testInitialize();
+    this.getNoFlyZoneResponse = this.placeholderRepository.getNoFlyZonesResponse;
+    //THE ABOVE IS A PLACEHOLDER FOR THE FOLLOWING COMMENTED-OUT CODE
+    /*
     this.httpClient
       .get<GetNoFlyZonesResponse>(
         Url.consumer('/get-no-fly-zones'),
@@ -340,7 +367,7 @@ export class CesiumService {
       )
       .subscribe((data) => {
         this.getNoFlyZoneResponse = data;
-
+        */
         //console.log('ELLIPSOID NO FLY ZONES')
         for (const ellipsoidNoFly of this.getNoFlyZoneResponse
           .ellipsoidNoFlyZones) {
@@ -483,7 +510,7 @@ export class CesiumService {
             });
           }
         }
-      });
+  //    });
   }
 
 
