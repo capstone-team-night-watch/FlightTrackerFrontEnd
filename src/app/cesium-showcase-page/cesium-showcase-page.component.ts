@@ -69,6 +69,7 @@ export class CesiumShowcaseComponent implements OnInit, OnChanges {
     this.getLiveFlightIcaos();
     this.cesium.setUpViewer("cesium");
     this.cesium.getAndLoadNoFlyZones();
+    this.cesium.getAndLoadTfrNoFlyZones();
   }
 
   ngOnChanges(): void {

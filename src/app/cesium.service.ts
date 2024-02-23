@@ -14,6 +14,7 @@ import {
   Operator,
 } from './objects/aero-api/flight-data';
 import { Url } from './utils/url';
+import { TfrNoFly } from './objects/tfr-no-fly/tfr-no-fly';
 
 import { PlaceholderRepository } from './objects/placeholder-repository/placeholder-repository';//PLACEHOLDER
 
@@ -66,7 +67,9 @@ export class CesiumService {
   rectangleNoFly: RectangleNoFly = new RectangleNoFly();
   militaryBase: MilitaryBase = new MilitaryBase();
   polygonNoFly: PolygonNoFly = new PolygonNoFly();
+  tfrNoFly: TfrNoFly = new TfrNoFly();
   getNoFlyZoneResponse: GetNoFlyZonesResponse;
+  getTfrNoFlyZoneResponse: GetNoFlyZonesResponse;
   getNoFlyZoneConflictResponse: getNoFlyZonesConflictResponse;
   prevFlightLabel: string;
   global_viewer: any;
@@ -98,6 +101,8 @@ export class CesiumService {
 
     // Load all no custom fly zones from database into cesium
     this.getAndLoadNoFlyZones();
+
+    this.getAndLoadTfrNoFlyZones();
     // Plots new flight point
     this.flyToAndPlotPoint(
       longitude,
@@ -506,6 +511,58 @@ export class CesiumService {
           }
         }
   //    });
+  }
+
+
+  public getAndLoadTfrNoFlyZones(): void {
+    console.log('Loading TFR No FlyZones');
+
+    this.httpClient
+      .get<GetNoFlyZonesResponse>(
+        Url.consumer('/getTfrNoFlyZones'),
+        this.httpOptions
+      )
+      .subscribe((data) => {
+        this.getTfrNoFlyZoneResponse = data;
+
+        console.log('TFR NO FLY ZONES')
+        console.log(this.getTfrNoFlyZoneResponse);
+        for (const tfrNoFly of this.getTfrNoFlyZoneResponse.tfrNoFlyZones) {
+          
+          if(tfrNoFly.notamType === "BOUNDARY") {
+            console.log('Boundary')
+            this.global_viewer.entities.add( {
+              polygon: {
+                hierarchy: Cesium.Cartesian3.fromDegreesArray(tfrNoFly.latlong),
+                height: 0,
+                material: Cesium.Color.RED.withAlpha(0.5),
+                outline: true,
+                outlineColor: Cesium.Color.BLACK,
+              },
+            }
+            );
+          }
+
+          if(tfrNoFly.notamType === "RADIUS") {
+            this.global_viewer.entities.add({
+              name: tfrNoFly.notamNumber,
+              position: Cesium.Cartesian3.fromDegrees(
+                tfrNoFly.latlong[0], tfrNoFly.latlong[1]
+              ),
+              ellipse: {
+                semiMinorAxis: tfrNoFly.radius,
+                semiMajorAxis: tfrNoFly.radius,
+                height: 0.0,
+                material: Cesium.Color.RED,
+                outline: true, // height must be set for outline to display
+              },
+            });
+          }
+          //console.log(ellipsoidNoFly)
+          
+        }
+        
+      });
   }
 
 
