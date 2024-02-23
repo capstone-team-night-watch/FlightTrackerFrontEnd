@@ -102,6 +102,9 @@ export class RectangleNoFlyZoneComponent {
   }
 
   submit(): void {
+    //PLACEHOLDER
+    this.cesium.addRectangleNoFlyZone(this.rectangleNoFly);
+    /*
     // TODO
     //WILL MAKE HTTP CALL TO ADD NO FLY ZONE
     this.httpClient.post<string>(Url.consumer('/addNoFlyZone/rectangle'),
@@ -111,6 +114,7 @@ export class RectangleNoFlyZoneComponent {
     }, error => {
       this.cesium.getAndLoadNoFlyZones();
     })
+    */
 
     document.getElementById("closeDialog")?.click();
     this.cesium.getAndLoadNoFlyZones();

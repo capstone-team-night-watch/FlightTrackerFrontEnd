@@ -124,6 +124,9 @@ export class CustomPolygonNoFlyZoneComponent {
   }
 
   submit(): void {
+    //PLACEHOLDER
+    this.cesium.addPolygonNoFlyZone(this.polygonNoFly);
+    /*
     // TODO
     //WILL MAKE HTTP CALL TO ADD NO FLY ZONE
     this.httpClient.post<string>(Url.consumer('/addNoFlyZone/polygon'),
@@ -133,7 +136,7 @@ export class CustomPolygonNoFlyZoneComponent {
     }, error => {
       this.cesium.getAndLoadNoFlyZones();
     })
-
+    */
     document.getElementById("closeDialog")?.click();
     this.cesium.getAndLoadNoFlyZones();
   }
