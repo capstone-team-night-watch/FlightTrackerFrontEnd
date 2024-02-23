@@ -5,10 +5,10 @@ import { MilitaryBase } from '../military-base/military-base';
 
 export class GetNoFlyZonesResponse {
 
-    public _ellipsoidNoFlyZones: EllipsoidNoFly[];
-    private _rectangleNoFlyZones: RectangleNoFly[];
-    private _polygonNoFlyZones: PolygonNoFly[];
-    private _militaryNoFlyZones: MilitaryBase[];
+    public _ellipsoidNoFlyZones: EllipsoidNoFly[] = [];
+    private _rectangleNoFlyZones: RectangleNoFly[] = [];
+    private _polygonNoFlyZones: PolygonNoFly[] = [];
+    private _militaryNoFlyZones: MilitaryBase[] = [];
 
     public get militaryNoFlyZones(): MilitaryBase[] {
         return this._militaryNoFlyZones;
