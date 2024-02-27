@@ -22,7 +22,7 @@ export class PlaceholderRepository {
         this._getNoFlyZonesResponse.rectangleNoFlyZones = [];
         this._getNoFlyZonesResponse.polygonNoFlyZones = [];
         this._getNoFlyZonesResponse.militaryNoFlyZones = [];
-        this._getNoFlyZonesResponse.tfrNoFlyZones = []
+        this._getNoFlyZonesResponse.tfrNoFlyZones = [];
 
         //Everything below can be deleted at a later date
 
