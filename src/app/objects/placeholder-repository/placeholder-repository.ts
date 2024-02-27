@@ -17,7 +17,15 @@ export class PlaceholderRepository {
         this._getNoFlyZonesResponse = value;
     }
 
-    public testInitialize() {
+    public setUpRepository() {
+      this._getNoFlyZonesResponse.ellipsoidNoFlyZones = [];
+        this._getNoFlyZonesResponse.rectangleNoFlyZones = [];
+        this._getNoFlyZonesResponse.polygonNoFlyZones = [];
+        this._getNoFlyZonesResponse.militaryNoFlyZones = [];
+        this._getNoFlyZonesResponse.tfrNoFlyZones = []
+
+        //Everything below can be deleted at a later date
+
         let testEllipsoid = new EllipsoidNoFly();
         testEllipsoid.name = "Test Ellipsoid";
         testEllipsoid.latitude = 41;
@@ -58,6 +66,7 @@ export class PlaceholderRepository {
         this._getNoFlyZonesResponse.rectangleNoFlyZones = [testRectangle];
         this._getNoFlyZonesResponse.polygonNoFlyZones = [testPolygon];
         this._getNoFlyZonesResponse.militaryNoFlyZones = [];
+        this._getNoFlyZonesResponse.tfrNoFlyZones = [];
 
         this.checkInterval();
     }
