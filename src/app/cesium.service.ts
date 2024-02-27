@@ -127,6 +127,9 @@ export class CesiumService {
       this.rectangles = this.entities.add(new Cesium.Entity());
       this.polygons = this.entities.add(new Cesium.Entity());
       this.militaryBases = this.entities.add(new Cesium.Entity());
+
+      // Sets up frontend placeholder repository. Only necessary for testing without a backend.
+      this.placeholderRepository.setUpRepository();//PLACEHOLDER
     }
   }
 
@@ -356,7 +359,6 @@ export class CesiumService {
     console.log('Loading No FlyZones');
 
     //PLACEHOLDER
-    //this.placeholderRepository.testInitialize();
     this.getNoFlyZoneResponse = this.placeholderRepository.getNoFlyZonesResponse;
     //THE ABOVE IS A PLACEHOLDER FOR THE FOLLOWING COMMENTED-OUT CODE
     /*
