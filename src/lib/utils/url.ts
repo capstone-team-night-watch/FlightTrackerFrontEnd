@@ -10,6 +10,10 @@ export namespace Url {
   }
 
   export function socket(path?: string): string {
+    if (path === undefined) {
+      return environment.socketUrl;
+    }
+
     return environment.socketUrl + path ?? '';
   }
 }

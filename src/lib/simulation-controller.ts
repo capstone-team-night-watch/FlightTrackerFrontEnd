@@ -22,6 +22,8 @@ export class SimulationController {
   private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
   constructor() {
+    console.log('Connecting to socket', Url.socket());
+
     this.socket = io(Url.socket());
     this.configureSocketConnection();
   }
@@ -32,7 +34,6 @@ export class SimulationController {
   }
 
   private configureSocketConnection(): void {
-
     this.socket.on('broadcast-health-check', (data: string) => {
       this.colisionEvent.trigger({
         data: data,
@@ -40,7 +41,9 @@ export class SimulationController {
     });
 
     this.socket.on('health-check', (data: string) => {
-      console.log('specific healtcheck', data);
+      this.colisionEvent.trigger({
+        data: data,
+      });
     });
 
     this.socket.emit('health-check', 'Are you alive');
