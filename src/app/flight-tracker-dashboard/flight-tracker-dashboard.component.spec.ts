@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FlightTrackerDashboardComponent } from './flight-tracker-dashboard.component';
+import { AppModule } from '../app.module';
 
 describe('FlightTrackerDashboardComponent', () => {
   let component: FlightTrackerDashboardComponent;
@@ -8,9 +9,9 @@ describe('FlightTrackerDashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FlightTrackerDashboardComponent ]
-    })
-    .compileComponents();
+      declarations: [FlightTrackerDashboardComponent],
+      imports: [AppModule],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FlightTrackerDashboardComponent);
     component = fixture.componentInstance;
