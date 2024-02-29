@@ -13,7 +13,6 @@ import {
   FlightDataIdent,
   Operator,
 } from './objects/aero-api/flight-data';
-import { Url } from './utils/url';
 import { TfrNoFly } from './objects/tfr-no-fly/tfr-no-fly';
 import { Url } from '../lib/utils/url';
 
