@@ -6,7 +6,7 @@ import { FlightGenerateDialog } from '../flight-generate-dialog/flight-generate-
 import { CesiumService } from '../cesium.service';
 import { NoFlyZoneGenerateDialog } from '../no-fly-zone-generate-dialog/no-fly-zone-generate-dialog.component';
 import { AirportGenerateFlightRequest } from '../objects/generate-flight/airport-generate-flight-request';
-import { Url } from '../utils/url';
+import { Url } from '../../lib/utils/url';
 
 @Component({
   selector: 'app-cesium-showcase',
@@ -114,11 +114,7 @@ export class CesiumShowcaseComponent implements OnInit, OnChanges {
         generateRequest.setArriveAirport(result.arriveAirport)
         generateRequest.setDepartAirport(result.departAirport)
 
-        // console.log(result)
-        // console.log(generateRequest);
-
         this.httpClient.post<string>(Url.producer('/airport/generate'), generateRequest, this.httpOptions).subscribe(data => {
-          // console.log(data);
         })
       } else {
         
@@ -131,12 +127,8 @@ export class CesiumShowcaseComponent implements OnInit, OnChanges {
         generateRequest.setLongitudeChange(result.longChange)
         generateRequest.setLatitudeChange(result.latChange)
         generateRequest.setAltitudeChange(result.altChange)
-        
-        // console.log(result)
-        // console.log(generateRequest);
 
         this.httpClient.post<string>(Url.producer('/custom/generate'), generateRequest, this.httpOptions).subscribe(data => {
-          // console.log(data);
         })
       }
 

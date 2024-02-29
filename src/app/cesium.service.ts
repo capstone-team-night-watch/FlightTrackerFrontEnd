@@ -13,7 +13,7 @@ import {
   FlightDataIdent,
   Operator,
 } from './objects/aero-api/flight-data';
-import { Url } from './utils/url';
+import { Url } from '../lib/utils/url';
 
 declare const Cesium: any;
 

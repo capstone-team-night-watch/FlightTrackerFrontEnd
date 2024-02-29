@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { EllipsoidNoFly } from 'src/app/objects/ellipsoid-no-fly/ellipsoid-no-fly';
 import { NoFlyZoneSubmittedComponent } from '../../no-fly-zone-submitted/no-fly-zone-submitted/no-fly-zone-submitted.component';
 import { CesiumService } from 'src/app/cesium.service';
-import { Url } from 'src/app/utils/url';
+import { Url } from 'src/lib/utils/url';
 
 @Component({
   selector: 'app-ellipsoid-no-fly-zone',

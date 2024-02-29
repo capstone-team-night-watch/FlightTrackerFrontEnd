@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { RectangleNoFly } from 'src/app/objects/rectangle-no-fly/rectangle-no-fly';
 import { NoFlyZoneSubmittedComponent } from '../../no-fly-zone-submitted/no-fly-zone-submitted/no-fly-zone-submitted.component';
 import { CesiumService } from 'src/app/cesium.service';
-import { Url } from 'src/app/utils/url';
+import { Url } from 'src/lib/utils/url';
 
 @Component({
   selector: 'app-rectangle-no-fly-zone',
