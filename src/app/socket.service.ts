@@ -1,10 +1,17 @@
 import { Injectable } from '@angular/core';
 import '../polyfills'
 import { CesiumService } from './cesium.service';
+<<<<<<< HEAD
 import { Url } from '../lib/utils/url';
 import * as SockJS from 'sockjs-client';
 import { FlightDataFa_Id, Position } from './objects/aero-api/flight-data';
 import { Stomp } from '@stomp/stompjs';
+=======
+import { Url } from './utils/url';
+import * as SockJS from 'sockjs-client';
+import { Stomp } from '@stomp/stompjs';
+import { FlightDataFa_Id, Position } from './objects/aero-api/flight-data';
+>>>>>>> origin/main
 
 
 @Injectable({
@@ -17,12 +24,18 @@ export class SocketService {
 
   connectToConsumer() {
     const socket = new SockJS(Url.consumer('/consumer-socket'));
+<<<<<<< HEAD
     this.stompClient.connect({}, (frame: any) => {
       console.log('Connected: ' + frame);
       this.stompClient.subscribe('/topic/FlightData', (data: { body: string; }) => {
         console.log("Received data from the Producer: " + data.body)
       })
       
+=======
+    this.stompClient = Stomp.over(socket);
+    this.stompClient.connect({}, (frame: any) => {
+      console.log('Connected: ' + frame);
+>>>>>>> origin/main
       this.stompClient.subscribe('/topic/liveCoords', (data: { body: string; }) => {
         console.log(data)
        // console.log(data.body)

@@ -13,7 +13,11 @@ import {
   FlightDataIdent,
   Operator,
 } from './objects/aero-api/flight-data';
+import { Url } from './utils/url';
+import { TfrNoFly } from './objects/tfr-no-fly/tfr-no-fly';
 import { Url } from '../lib/utils/url';
+
+import { PlaceholderRepository } from './objects/placeholder-repository/placeholder-repository';//PLACEHOLDER
 
 declare const Cesium: any;
 
@@ -64,7 +68,9 @@ export class CesiumService {
   rectangleNoFly: RectangleNoFly = new RectangleNoFly();
   militaryBase: MilitaryBase = new MilitaryBase();
   polygonNoFly: PolygonNoFly = new PolygonNoFly();
+  tfrNoFly: TfrNoFly = new TfrNoFly();
   getNoFlyZoneResponse: GetNoFlyZonesResponse;
+  getTfrNoFlyZoneResponse: GetNoFlyZonesResponse;
   getNoFlyZoneConflictResponse: getNoFlyZonesConflictResponse;
   prevFlightLabel: string;
   global_viewer: any;
@@ -80,6 +86,8 @@ export class CesiumService {
   aeroFlightFaIdResponse: FlightDataFa_Id;
   aeroOperatorResponse: Operator;
 
+  placeholderRepository: PlaceholderRepository = new PlaceholderRepository();//PLACEHOLDER
+  
   public updateFlightsAndZones(
     div: string,
     longitude: number,
@@ -94,6 +102,8 @@ export class CesiumService {
 
     // Load all no custom fly zones from database into cesium
     this.getAndLoadNoFlyZones();
+
+    this.getAndLoadTfrNoFlyZones();
     // Plots new flight point
     this.flyToAndPlotPoint(
       longitude,
@@ -118,6 +128,9 @@ export class CesiumService {
       this.rectangles = this.entities.add(new Cesium.Entity());
       this.polygons = this.entities.add(new Cesium.Entity());
       this.militaryBases = this.entities.add(new Cesium.Entity());
+
+      // Sets up frontend placeholder repository. Only necessary for testing without a backend.
+      this.placeholderRepository.setUpRepository();//PLACEHOLDER
     }
   }
 
@@ -166,6 +179,19 @@ export class CesiumService {
     }
   }
 
+  public addEllipsoidNoFlyZone(noFlyIn: any) {
+    this.placeholderRepository.addEllipsoidNoFlyZone(noFlyIn);
+    this.getAndLoadNoFlyZones();
+  }
+
+  public addRectangleNoFlyZone(noFlyIn: any) {
+    this.placeholderRepository.addRectangleNoFlyZone(noFlyIn);
+  }
+
+  public addPolygonNoFlyZone(noFlyIn: any) {
+    this.placeholderRepository.addPolygonNoFlyZone(noFlyIn);
+  }
+
   public deleteNoFlyZone() {
     let entity = this.global_viewer.selectedEntity.id;
     let zoneName = this.global_viewer.selectedEntity.name;
@@ -174,6 +200,10 @@ export class CesiumService {
     let queryParams = new HttpParams();
     queryParams = queryParams.append('zoneName', zoneName);
 
+    //PLACEHOLDER
+    this.placeholderRepository.deleteNoFlyZone(zoneName);
+    //THE ABOVE IS A PLACEHOLDER FOR THE FOLLOWING COMMENTED-OUT CODE
+    /*
     this.httpClient
       .get<string>(Url.consumer("/deleteNoFlyZone"), {
         headers: this.httpHeaders,
@@ -182,6 +212,7 @@ export class CesiumService {
       .subscribe((response) => {
         console.log('Getting RESPONSE ' + response);
       });
+      */
   }
 
   public flyToNoFlyZone(zoneName: string) {
@@ -328,6 +359,10 @@ export class CesiumService {
   public getAndLoadNoFlyZones(): void {
     console.log('Loading No FlyZones');
 
+    //PLACEHOLDER
+    this.getNoFlyZoneResponse = this.placeholderRepository.getNoFlyZonesResponse;
+    //THE ABOVE IS A PLACEHOLDER FOR THE FOLLOWING COMMENTED-OUT CODE
+    /*
     this.httpClient
       .get<GetNoFlyZonesResponse>(
         Url.consumer('/get-no-fly-zones'),
@@ -335,7 +370,7 @@ export class CesiumService {
       )
       .subscribe((data) => {
         this.getNoFlyZoneResponse = data;
-
+        */
         //console.log('ELLIPSOID NO FLY ZONES')
         for (const ellipsoidNoFly of this.getNoFlyZoneResponse
           .ellipsoidNoFlyZones) {
@@ -478,6 +513,58 @@ export class CesiumService {
             });
           }
         }
+  //    });
+  }
+
+
+  public getAndLoadTfrNoFlyZones(): void {
+    console.log('Loading TFR No FlyZones');
+
+    this.httpClient
+      .get<GetNoFlyZonesResponse>(
+        Url.consumer('/getTfrNoFlyZones'),
+        this.httpOptions
+      )
+      .subscribe((data) => {
+        this.getTfrNoFlyZoneResponse = data;
+
+        console.log('TFR NO FLY ZONES')
+        console.log(this.getTfrNoFlyZoneResponse);
+        for (const tfrNoFly of this.getTfrNoFlyZoneResponse.tfrNoFlyZones) {
+          
+          if(tfrNoFly.notamType === "BOUNDARY") {
+            console.log('Boundary')
+            this.global_viewer.entities.add( {
+              polygon: {
+                hierarchy: Cesium.Cartesian3.fromDegreesArray(tfrNoFly.latlong),
+                height: 0,
+                material: Cesium.Color.RED.withAlpha(0.5),
+                outline: true,
+                outlineColor: Cesium.Color.BLACK,
+              },
+            }
+            );
+          }
+
+          if(tfrNoFly.notamType === "RADIUS") {
+            this.global_viewer.entities.add({
+              name: tfrNoFly.notamNumber,
+              position: Cesium.Cartesian3.fromDegrees(
+                tfrNoFly.latlong[0], tfrNoFly.latlong[1]
+              ),
+              ellipse: {
+                semiMinorAxis: tfrNoFly.radius,
+                semiMajorAxis: tfrNoFly.radius,
+                height: 0.0,
+                material: Cesium.Color.RED,
+                outline: true, // height must be set for outline to display
+              },
+            });
+          }
+          //console.log(ellipsoidNoFly)
+          
+        }
+        
       });
   }
 

@@ -103,6 +103,9 @@ constructor(
   }
 
   submit(): void {
+    //PLACEHOLDER
+    this.cesium.addEllipsoidNoFlyZone(this.ellipsoidNoFly);
+    /*
     // TODO
     //WILL MAKE HTTP CALL TO ADD NO FLY ZONE
     this.httpClient.post<string>(Url.consumer('/addNoFlyZone/ellipsoid'),
@@ -114,9 +117,9 @@ constructor(
       console.log("LOGGING ELLIP CUSTOM ERROR")
       this.cesium.getAndLoadNoFlyZones();
     })
-
+    */
     document.getElementById("closeDialog")?.click();
-    
+    this.cesium.getAndLoadNoFlyZones();
 
   }
 
