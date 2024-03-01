@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, importProvidersFrom } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
@@ -29,6 +29,9 @@ import { NoFlyZoneSubmittedComponent } from './no-fly-zone-types/no-fly-zone-sub
 import { FlightGenerateDialog } from './flight-generate-dialog/flight-generate-dialog.component';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { NoFlyZoneGenerateDialog } from './no-fly-zone-generate-dialog/no-fly-zone-generate-dialog.component';
+import { FlightTrackerDashboardComponent } from './flight-tracker-dashboard/flight-tracker-dashboard.component';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @NgModule({
   declarations: [
@@ -47,6 +50,7 @@ import { NoFlyZoneGenerateDialog } from './no-fly-zone-generate-dialog/no-fly-zo
     NoFlyZoneSubmittedComponent,
     FlightGenerateDialog,
     NoFlyZoneGenerateDialog,
+    FlightTrackerDashboardComponent,
   ],
   imports: [
     BrowserModule,
@@ -64,6 +68,7 @@ import { NoFlyZoneGenerateDialog } from './no-fly-zone-generate-dialog/no-fly-zo
     MatButtonModule,
     MatDialogModule,
     MatInputModule,
+    MatSnackBarModule,
     MatCheckboxModule,
   ],
   providers: [],

@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { GetNoFlyZonesResponse } from 'src/app/objects/get-no-fly-zones-response/get-no-fly-zones-response';
-import { Url } from 'src/app/utils/url';
+import { Url } from 'src/lib/utils/url';
 
 @Component({
   selector: 'app-home',
