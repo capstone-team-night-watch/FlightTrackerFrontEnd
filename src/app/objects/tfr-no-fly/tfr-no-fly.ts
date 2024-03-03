@@ -1,9 +1,10 @@
 export class TfrNoFly {
-
-    notamNumber: string;
-    notamType: string;
-    latlong: Number[];
-    radius: number;
-    startTime: string;
-    endTime: string;
+  notamNumber: string;
+  notamType: string;
+  latlong: Number[];
+  radius: number;
+  startTime: string;
+  endTime: string;
+  minAltitude?: number;
+  maxAltitude?: number;
 }
