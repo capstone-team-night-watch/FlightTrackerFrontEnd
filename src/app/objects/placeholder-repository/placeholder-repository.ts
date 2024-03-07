@@ -4,6 +4,8 @@ import { RectangleNoFly } from "../rectangle-no-fly/rectangle-no-fly";
 import { MilitaryBase } from '../military-base/military-base';
 import { TfrNoFly } from "../tfr-no-fly/tfr-no-fly";
 import { CesiumService } from '../../cesium.service';
+import { ViewController } from '../../view.controller';
+import { SimulationController } from '../../simulation.controller';
 import { GetNoFlyZonesResponse } from '../get-no-fly-zones-response/get-no-fly-zones-response';
 import {
     FlightDataFa_Id,
@@ -22,6 +24,8 @@ export class PlaceholderRepository {
     private _flightOperators: Operator[] = [];
 
     private cesium: CesiumService;
+    private viewController: ViewController;
+    private simulationController: SimulationController;
 
     public get getNoFlyZonesResponse(): GetNoFlyZonesResponse {
         return this._getNoFlyZonesResponse;
