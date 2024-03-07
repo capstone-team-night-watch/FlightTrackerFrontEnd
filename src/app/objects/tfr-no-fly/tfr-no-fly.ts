@@ -5,6 +5,5 @@ export class TfrNoFly {
   radius: number;
   startTime: string;
   endTime: string;
-  minAltitude?: number;
-  maxAltitude?: number;
+  altitude: Number[];
 }
