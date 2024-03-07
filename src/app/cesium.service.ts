@@ -185,10 +185,12 @@ export class CesiumService {
 
   public addRectangleNoFlyZone(noFlyIn: any) {
     this.placeholderRepository.addRectangleNoFlyZone(noFlyIn);
+    this.getAndLoadNoFlyZones();
   }
 
   public addPolygonNoFlyZone(noFlyIn: any) {
     this.placeholderRepository.addPolygonNoFlyZone(noFlyIn);
+    this.getAndLoadNoFlyZones();
   }
 
   public deleteNoFlyZone() {
