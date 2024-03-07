@@ -7,6 +7,7 @@ import { CesiumService } from '../cesium.service';
 import { NoFlyZoneGenerateDialog } from '../no-fly-zone-generate-dialog/no-fly-zone-generate-dialog.component';
 import { AirportGenerateFlightRequest } from '../objects/generate-flight/airport-generate-flight-request';
 import { Url } from '../../lib/utils/url';
+import { SimulationController } from '../simulation.controller';
 
 @Component({
   selector: 'app-cesium-showcase',
@@ -45,6 +46,7 @@ export class CesiumShowcaseComponent implements OnInit, OnChanges {
 
   constructor(private httpClient: HttpClient,
     public dialog: MatDialog,
+    private simulationController: SimulationController,
     private cesium: CesiumService) { }
 
   getLiveFlightIcaos(): void {
@@ -67,9 +69,21 @@ export class CesiumShowcaseComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.getLiveFlightIcaos();
+
+    //this.cesium.placeholderRepository.setUpRepository();
+
+    /*
     this.cesium.setUpViewer("cesium");
     this.cesium.getAndLoadNoFlyZones();
     this.cesium.getAndLoadTfrNoFlyZones();
+    */
+
+    //this.simulationController.placeholderRepository.setUpRepository();
+    
+    this.simulationController.viewController.setUpViewer("cesium");
+    this.simulationController.getAndLoadNoFlyZones();
+    this.simulationController.getAndLoadTfrNoFlyZones();
+    
   }
 
   ngOnChanges(): void {
@@ -77,11 +91,13 @@ export class CesiumShowcaseComponent implements OnInit, OnChanges {
   }
 
   getTrackedFlights() {
-    this.tracked_flight_list = this.cesium.getTrackedFlights();
+    //this.tracked_flight_list = this.cesium.getTrackedFlights();
+    this.tracked_flight_list = this.simulationController.getTrackedFlights();
     this.are_tracked_visible = !this.are_tracked_visible;
   }
   findFlight(flight : string){
-      this.cesium.findFlight(flight);
+      //this.cesium.findFlight(flight);
+      this.simulationController.findFlight(flight);
   }
 
   setFlightIcao(icao: string): void {
