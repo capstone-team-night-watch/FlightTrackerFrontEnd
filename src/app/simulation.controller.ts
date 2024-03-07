@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Url } from './utils/url';
+import { Url } from '../lib/utils/url';
 import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { ViewController } from './view.controller';
