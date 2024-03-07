@@ -201,10 +201,8 @@ export class CesiumService {
     let queryParams = new HttpParams();
     queryParams = queryParams.append('zoneName', zoneName);
 
-    //PLACEHOLDER
-    this.placeholderRepository.deleteNoFlyZone(zoneName);
-    //THE ABOVE IS A PLACEHOLDER FOR THE FOLLOWING COMMENTED-OUT CODE
-    /*
+    //this.placeholderRepository.deleteNoFlyZone(zoneName);
+    
     this.httpClient
       .get<string>(Url.consumer("/deleteNoFlyZone"), {
         headers: this.httpHeaders,
@@ -213,7 +211,6 @@ export class CesiumService {
       .subscribe((response) => {
         console.log('Getting RESPONSE ' + response);
       });
-      */
   }
 
   public flyToNoFlyZone(zoneName: string) {
@@ -360,10 +357,25 @@ export class CesiumService {
   public getAndLoadNoFlyZones(): void {
     console.log('Loading No FlyZones');
 
-    //PLACEHOLDER
-    this.getNoFlyZoneResponse = this.placeholderRepository.getNoFlyZonesResponse;
-    //THE ABOVE IS A PLACEHOLDER FOR THE FOLLOWING COMMENTED-OUT CODE
+    //CODE FOR PLACEHOLDER REPO
     /*
+    let testPlane = this.placeholderRepository.getFlightByICAO("TS1234");
+    console.log("Should at least get here.");
+    if (testPlane != null) {
+    this.makePlane(this.global_viewer,
+      testPlane.ident_icao,
+      testPlane.last_position.latitude,
+      testPlane.last_position.longitude,
+      testPlane.last_position.altitude);
+      console.log("Should have made flight");
+    }
+    */
+    //PLACEHOLDER
+
+    //PLACEHOLDER
+    //this.getNoFlyZoneResponse = this.placeholderRepository.getNoFlyZonesResponse;
+    //THE ABOVE IS A PLACEHOLDER FOR THE FOLLOWING COMMENTED-OUT CODE
+    
     this.httpClient
       .get<GetNoFlyZonesResponse>(
         Url.consumer('/get-no-fly-zones'),
@@ -371,7 +383,6 @@ export class CesiumService {
       )
       .subscribe((data) => {
         this.getNoFlyZoneResponse = data;
-        */
         //console.log('ELLIPSOID NO FLY ZONES')
         for (const ellipsoidNoFly of this.getNoFlyZoneResponse
           .ellipsoidNoFlyZones) {
@@ -514,7 +525,7 @@ export class CesiumService {
             });
           }
         }
-  //    });
+    });
   }
 
 
