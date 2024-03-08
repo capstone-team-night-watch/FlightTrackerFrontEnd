@@ -6,7 +6,11 @@ export interface SimulationRenderer {
   CreateNoFlyZone(): NoFlyZone;
 
   RemovePlane(plane: Plane): void;
-  RemovNoFlyZone(zone: NoFlyZone): void;
+  RemoveNoFlyZone(zone: NoFlyZone): void;
 
   UpdatePlaneInformation(plane: Plane): void;
+}
+
+export interface SimulationViewer {
+  handleNoFlyZoneCreation(zone: NoFlyZone): void;
 }
