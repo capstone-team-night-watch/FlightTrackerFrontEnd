@@ -57,5 +57,11 @@ export class FlightTrackerDashboardComponent implements OnInit {
     this.simulationController.events.flightCreated.addHandler((flight) => {
       this.planes = flight;
     });
+
+    this.simulationController.events.message.addHandler((message) => {
+      this._snackBar.open(message.message, '', {
+        duration: 2000,
+      });
+    });
   }
 }
