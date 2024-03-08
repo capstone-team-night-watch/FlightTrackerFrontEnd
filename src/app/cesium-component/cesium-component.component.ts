@@ -27,7 +27,6 @@ export class CesiumComponentComponent implements OnInit, SimulationRenderer{
     this.socket.connectToConsumer();
   }
 
-
   CreatePlane(): Plane {
     throw new Error('Method not implemented.');
   }
@@ -40,7 +39,7 @@ export class CesiumComponentComponent implements OnInit, SimulationRenderer{
     throw new Error('Method not implemented.');
   }
 
-  RemovNoFlyZone(zone: NoFlyZone): void {
+  RemoveNoFlyZone(zone: NoFlyZone): void {
     throw new Error('Method not implemented.');
   }
 

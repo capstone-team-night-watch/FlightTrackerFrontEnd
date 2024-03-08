@@ -1,4 +1,4 @@
 
-export type CollisionEvent = {
-    data: string;
+export type SimulationMessage = {
+    message: string;
 }
