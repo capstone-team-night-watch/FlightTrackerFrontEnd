@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Url } from '../lib/utils/url';
 import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { ViewController } from './view.controller';
+import { CesiumViewController } from './view.controller';
 import { RectangleNoFly } from './objects/rectangle-no-fly/rectangle-no-fly';
 import { PolygonNoFly } from './objects/polygon-no-fly/polygon-no-fly';
 import { EllipsoidNoFly } from './objects/ellipsoid-no-fly/ellipsoid-no-fly';
@@ -23,7 +23,7 @@ import { PlaceholderRepository } from './objects/placeholder-repository/placehol
 @Injectable({
     providedIn: 'root',
 })
-export class SimulationController {
+export class CesiumSimulationController {
     ellipsoidNoFly: EllipsoidNoFly = new EllipsoidNoFly();
     rectangleNoFly: RectangleNoFly = new RectangleNoFly();
     militaryBase: MilitaryBase = new MilitaryBase();
@@ -43,7 +43,7 @@ export class SimulationController {
     aeroFlightFaIdResponse: FlightDataFa_Id;
     aeroOperatorResponse: Operator;
 
-    viewController: ViewController = new ViewController();
+    cesiumViewController: CesiumViewController = new CesiumViewController();
     placeholderRepository: PlaceholderRepository = new PlaceholderRepository();//PLACEHOLDER
 
     httpOptions = {
@@ -91,11 +91,12 @@ export class SimulationController {
         flightFaIdRespObj: FlightDataFa_Id | undefined
     ): void {
         // Sets up cesium viewer
-        this.viewController.setUpViewer(div);
+        this.cesiumViewController.setUpViewer(div);
     
         // Load all no custom fly zones from database into cesium
         this.getAndLoadNoFlyZones();
     
+        //
         this.getAndLoadTfrNoFlyZones();
         // Plots new flight point
         this.flyToAndPlotPoint(
@@ -124,10 +125,10 @@ export class SimulationController {
     }
 
     public deleteNoFlyZone() {
-        let entity = this.viewController.global_viewer.selectedEntity.id;
-        let zoneName = this.viewController.global_viewer.selectedEntity.name;
+        let entity = this.cesiumViewController.global_viewer.selectedEntity.id;
+        let zoneName = this.cesiumViewController.global_viewer.selectedEntity.name;
     
-        this.viewController.global_viewer.entities.removeById(entity);
+        this.cesiumViewController.global_viewer.entities.removeById(entity);
         let queryParams = new HttpParams();
         queryParams = queryParams.append('zoneName', zoneName);
 
@@ -142,9 +143,9 @@ export class SimulationController {
     }
 
     public findFlight(flightIcao: string) {
-        this.viewController.global_viewer.entities.values.forEach((element: any) => {
+        this.cesiumViewController.global_viewer.entities.values.forEach((element: any) => {
             if (element.id == 'Flight ICAO: ' + flightIcao) {
-                this.viewController.global_viewer.zoomTo(element);
+                this.cesiumViewController.global_viewer.zoomTo(element);
             }
         });
     }
@@ -210,39 +211,39 @@ export class SimulationController {
 
     public getAndLoadNoFlyZones(): void {
         //FOR PLACEHOLDER REPOSITORY
-        /*
+        
         let testPlane = this.placeholderRepository.getFlightByICAO("TS1234");
         console.log("Should at least get here.");
         if (testPlane != null) {
-            this.viewController.makePlane(this.viewController.global_viewer,
+            this.cesiumViewController.makePlane(this.cesiumViewController.global_viewer,
             testPlane.ident_icao,
             testPlane.last_position.latitude,
             testPlane.last_position.longitude,
             testPlane.last_position.altitude);
             console.log("Should have made flight");
         }
-        */
+        
 
         //PLACEHOLDER
-        //this.getNoFlyZoneResponse = this.placeholderRepository.getNoFlyZonesResponse;
-        
+        this.getNoFlyZoneResponse = this.placeholderRepository.getNoFlyZonesResponse;
+        //
         this.httpClient.get<GetNoFlyZonesResponse>(
         Url.consumer('/get-no-fly-zones'),
         this.httpOptions
         ).subscribe((data) => {
             this.getNoFlyZoneResponse = data;
-            
+            //
             //console.log('ELLIPSOID NO FLY ZONES')
             for (const ellipsoidNoFly of this.getNoFlyZoneResponse.ellipsoidNoFlyZones) {
                 let contains: boolean = false;
-                this.viewController.global_viewer.entities.values.forEach((element: any) => {
+                this.cesiumViewController.global_viewer.entities.values.forEach((element: any) => {
                     if (element.name == ellipsoidNoFly.name) {
                         contains = true;
                     }
                 });
 
                 if (!contains) {
-                    this.viewController.addEllipsoidNoFlyZone(ellipsoidNoFly);
+                    this.cesiumViewController.addEllipsoidNoFlyZone(ellipsoidNoFly);
                     //console.log(ellipsoidNoFly)
                 }
             }
@@ -250,14 +251,14 @@ export class SimulationController {
             //console.log('RECTANGLE NO FLY ZONE')
             for (const rectangleNoFly of this.getNoFlyZoneResponse.rectangleNoFlyZones) {
                 let contains: boolean = false;
-                this.viewController.global_viewer.entities.values.forEach((element: any) => {
+                this.cesiumViewController.global_viewer.entities.values.forEach((element: any) => {
                     if (element.name == rectangleNoFly.name) {
                     contains = true;
                     }
                 });
 
                 if (!contains) {
-                    this.viewController.addRectangleNoFlyZone(rectangleNoFly);
+                    this.cesiumViewController.addRectangleNoFlyZone(rectangleNoFly);
                     // console.log(rectangleNoFly)
                 }
             }
@@ -266,14 +267,14 @@ export class SimulationController {
             for (const polygonNoFly of this.getNoFlyZoneResponse
             .polygonNoFlyZones) {
                 let contains: boolean = false;
-                this.viewController.global_viewer.entities.values.forEach((element: any) => {
+                this.cesiumViewController.global_viewer.entities.values.forEach((element: any) => {
                     if (element.name == polygonNoFly.name) {
                         contains = true;
                     }
                 });
 
                 if (!contains) {
-                    this.viewController.addPolygonNoFlyZone(polygonNoFly);
+                    this.cesiumViewController.addPolygonNoFlyZone(polygonNoFly);
                 }
             }   
 
@@ -283,7 +284,7 @@ export class SimulationController {
                 let data = JSON.parse(militaryBase.geoJson);
 
                 let contains: boolean = false;
-                this.viewController.global_viewer.entities.values.forEach((element: any) => {
+                this.cesiumViewController.global_viewer.entities.values.forEach((element: any) => {
                     if (element.name == militaryBase.name) {
                         contains = true;
                     }
@@ -297,10 +298,10 @@ export class SimulationController {
                 }
 
                 if (!contains) {
-                    this.viewController.addMilitaryNoFlyZone(militaryBase, coordArray);
+                    this.cesiumViewController.addMilitaryNoFlyZone(militaryBase, coordArray);
                 }
             }
-        });
+        });//
     }
 
     public getAndLoadTfrNoFlyZones(): void {
@@ -318,11 +319,11 @@ export class SimulationController {
             console.log(this.getTfrNoFlyZoneResponse);
             for (const tfrNoFly of this.getTfrNoFlyZoneResponse.tfrNoFlyZones) {
                 if(tfrNoFly.notamType === "BOUNDARY") {
-                    this.viewController.addTFRBoundaryNoFlyZone(tfrNoFly);
+                    this.cesiumViewController.addTFRBoundaryNoFlyZone(tfrNoFly);
                 }
         
                 if(tfrNoFly.notamType === "RADIUS") {
-                    this.viewController.addTFRRadiusNoFlyZone(tfrNoFly);
+                    this.cesiumViewController.addTFRRadiusNoFlyZone(tfrNoFly);
                 }
             }
         });
@@ -381,30 +382,46 @@ export class SimulationController {
             }
         }
     
-        if (!this.viewController.global_viewer.entities.getById('Flight ICAO: ' + flightIdent_Icao)) {
-            this.viewController.global_viewer.camera.moveEnd.addEventListener(() =>
-                this.viewController.makePlane(this.viewController.global_viewer, 'Flight ICAO: ' + flightIdent_Icao, 0, 0, 0));
+        if (!this.cesiumViewController.global_viewer.entities.getById('Flight ICAO: ' + flightIdent_Icao)) {
+            this.cesiumViewController.global_viewer.camera.moveEnd.addEventListener(() =>
+                this.cesiumViewController.makePlane(this.cesiumViewController.global_viewer, 'Flight ICAO: ' + flightIdent_Icao, 0, 0, 0));
         }
     
-        // Making a line with the stored coordinates
+        // Making a line with the stored coordinates (OLD)
+        /*
         if (location_has_changed && current_coordinates) {
-            this.viewController.makeTrailLine(flightIdent_Icao, current_coordinates);
+            this.cesiumViewController.makeTrailLine(flightIdent_Icao, current_coordinates);
         }
+        */
+
+        //(NEW)
+        /*
+        let originLongIn, originLatIn = this.placeholderRepository.getAirportCoordinates(flightFaIdRespObj?.origin.code_icao);
+        let destinationLongIn, destinationLatIn = this.placeholderRepository.getAirportCoordinates(flightFaIdRespObj?.destination.code_icao);
+        console.log("Origin long: " + originLongIn);
+        if (originLongIn != null && originLatIn != null) {
+            this.cesiumViewController.makePastLine(flightIdent_Icao, originLatIn, originLongIn, flightFaIdRespObj)
+        }
+        if (destinationLatIn != null && destinationLongIn != null) {
+            this.cesiumViewController.makePastLine(flightIdent_Icao, destinationLatIn, destinationLongIn, flightFaIdRespObj)
+        }
+        */
+        this.cesiumViewController.makeTrailLine(flightIdent_Icao, flightFaIdRespObj?.waypoints);
 
         if (location_has_changed) {
-            this.viewController.makePlane(
-                this.viewController.global_viewer,
+            this.cesiumViewController.makePlane(
+                this.cesiumViewController.global_viewer,
                 'Flight ICAO: ' + flightIdent_Icao,
                 longitude,
                 latitude,
                 altitude
             ).then((wait) => {
                 if (this.aeroFlightFaIdResponse && flightFaIdRespObj != null) {
-                //
-                this.httpClient.get<FlightDataIdent>(
-                    Url.producer('/flightident/') + flightIdent_Icao,
-                    this.httpOptions
-                ).subscribe((flightResponse) => {
+                    //
+                    this.httpClient.get<FlightDataIdent>(
+                        Url.producer('/flightident/') + flightIdent_Icao,
+                        this.httpOptions
+                    ).subscribe((flightResponse) => {
                         this.aeroFlightIdentResponse = flightResponse;
                         if (this.aeroFlightIdentResponse) {
                             this.httpClient.get<Operator>(
@@ -430,7 +447,7 @@ export class SimulationController {
                                     ).subscribe((data) => {
                                         let point: any;
                 
-                                        this.viewController.global_viewer.entities.values.forEach(
+                                        this.cesiumViewController.global_viewer.entities.values.forEach(
                                         (element: any) => {
                                             if (element.id == 'Flight ICAO: ' + flightIdent_Icao) {
                                                 point = element;
@@ -438,10 +455,10 @@ export class SimulationController {
                                         });
                 
                                         if (data.inConflict) {
-                                            this.viewController.makeConflictBillboard(point, data.noFlyZoneName, flightFaIdRespObj,
+                                            this.cesiumViewController.makeConflictBillboard(point, data.noFlyZoneName, flightFaIdRespObj,
                                                 flightIdent_Icao, airlineNmVal, response.location, latitude, longitude, altitude);
                                         } else {
-                                            this.viewController.makeFlightBillboard(point, flightFaIdRespObj,
+                                            this.cesiumViewController.makeFlightBillboard(point, flightFaIdRespObj,
                                                 flightIdent_Icao, airlineNmVal, response.location, latitude, longitude, altitude);
                                         }
                                     });
@@ -449,7 +466,9 @@ export class SimulationController {
                             });
                         }
                     });
+                    //
                 } else {
+                    //
                     //If basically flight is generated
                     this.getFlightLocation(
                         longitude,
@@ -463,21 +482,22 @@ export class SimulationController {
                         flightIdent_Icao
                         ).subscribe((data) => {
                             let point: any;
-                            this.viewController.global_viewer.entities.values.forEach((element: any) => {
+                            this.cesiumViewController.global_viewer.entities.values.forEach((element: any) => {
                                 if (element.id == 'Flight ICAO: ' + flightIdent_Icao) {
                                     point = element;
                                 }
                             });
                 
                             if (data.inConflict) {
-                                this.viewController.makeMockConflictBillboard(point, data.noFlyZoneName, flightIdent_Icao, airlineNmVal,
+                                this.cesiumViewController.makeMockConflictBillboard(point, data.noFlyZoneName, flightIdent_Icao, airlineNmVal,
                                     response.location, latitude, longitude, altitude);
                             } else {
-                                this.viewController.makeMockFlightBillboard(point, flightIdent_Icao, airlineNmVal,
+                                this.cesiumViewController.makeMockFlightBillboard(point, flightIdent_Icao, airlineNmVal,
                                     response.location, latitude, longitude, altitude);
                             }
                         });
                     });
+                    //
                 }
             });
         }
