@@ -5,6 +5,7 @@ import { Url } from '../../lib/utils/url';
 import { CesiumService } from '../cesium.service';
 import { HttpClient } from '@angular/common/http';
 import { CesiumComponentComponent } from '../cesium-component/cesium-component.component';
+import { CesiumSimulationController } from '../simulation.controller';
 import { Observable, map, startWith } from 'rxjs';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -19,6 +20,7 @@ import {
   NoFlyZoneInfo,
   PolygonNoFlyZone,
 } from 'src/lib/socket-events/no-fly-zone-tracking';
+
 
 @Component({
   selector: 'app-flight-tracker-dashboard',
@@ -37,12 +39,29 @@ export class FlightTrackerDashboardComponent implements OnInit {
 
   @ViewChild('simulationRenderer') simulationRenderer: CesiumComponentComponent;
 
-  constructor(private _snackBar: MatSnackBar, private cesium: CesiumService) {}
+  constructor(private _snackBar: MatSnackBar, private cesiumSimulationController: CesiumSimulationController, private cesium: CesiumService) {}
 
   ngOnInit() {
+    //PLACEHOLDER
+    /*
+    this.cesiumSimulationController.placeholderRepository.setUpRepository();
+    let testFlight = this.cesiumSimulationController.placeholderRepository.createTestFlight();
+    
+    this.cesiumSimulationController.updateFlightsAndZones(
+      "cesium",
+      testFlight.last_position.latitude,
+      testFlight.last_position.longitude,
+      testFlight.last_position.altitude,
+      testFlight.ident_icao,
+      undefined,
+      testFlight
+    );
+    */
+    
     this.simulationController = new SimulationController();
-    this.cesium.setUpViewer('cesium');
-    this.cesium.getAndLoadNoFlyZones();
+    this.cesiumSimulationController.cesiumViewController.setUpViewer("cesium");
+    this.cesiumSimulationController.getAndLoadNoFlyZones();
+    this.cesiumSimulationController.getAndLoadTfrNoFlyZones();
 
     this.configureListener();
   }
