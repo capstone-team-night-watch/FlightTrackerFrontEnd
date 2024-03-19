@@ -22,4 +22,11 @@ describe('FlightSearchComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should filter for flight', () => {
+    expect(component.filteredFlightList?.length).toEqual(9);
+    component.search = 'NE4512';
+    component.filter(new Event('e'));
+    expect(component.filteredFlightList?.length).toEqual(1);
+  });
 });

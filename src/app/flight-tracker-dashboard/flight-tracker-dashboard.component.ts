@@ -6,6 +6,21 @@ import { CesiumService } from '../cesium.service';
 import { HttpClient } from '@angular/common/http';
 import { CesiumComponentComponent } from '../cesium-component/cesium-component.component';
 import { CesiumSimulationController } from '../simulation.controller';
+import { Observable, map, startWith } from 'rxjs';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { AsyncPipe } from '@angular/common';
+import { FlightInformation } from 'src/lib/socket-events/flight-tracking';
+import { NoFlyZone } from 'src/lib/simulation-entities/no-fly-zone';
+import { DeepReadonly } from 'src/lib/utils/types';
+import {
+  CircularNoFlyZone,
+  NoFlyZoneInfo,
+  PolygonNoFlyZone,
+} from 'src/lib/socket-events/no-fly-zone-tracking';
+
 
 @Component({
   selector: 'app-flight-tracker-dashboard',
@@ -14,23 +29,19 @@ import { CesiumSimulationController } from '../simulation.controller';
 })
 export class FlightTrackerDashboardComponent implements OnInit {
   private simulationController: SimulationController;
-  @ViewChild('simulationRenderer') simulationRenderer: CesiumComponentComponent ;
+
+  public filter = new FormControl('');
+
+  public noFlyZone: DeepReadonly<NoFlyZoneInfo[]> = [];
+  public planes: DeepReadonly<FlightInformation[]> = [];
+
+  // public filteredOptions = this.options;
+
+  @ViewChild('simulationRenderer') simulationRenderer: CesiumComponentComponent;
 
   constructor(private _snackBar: MatSnackBar, private cesiumSimulationController: CesiumSimulationController, private cesium: CesiumService) {}
 
   ngOnInit() {
-    
-    try {
-      this.simulationController = new SimulationController();
-    } catch (exception) {
-      this._snackBar.open('Failed to connect to consumer socket', 'Close');
-    }
-    
-
-    this.simulationController.onColision(() => {
-      this._snackBar.open('Collision Detected', 'Close');
-    });
-
     //PLACEHOLDER
     /*
     this.cesiumSimulationController.placeholderRepository.setUpRepository();
@@ -47,12 +58,29 @@ export class FlightTrackerDashboardComponent implements OnInit {
     );
     */
     
+    this.simulationController = new SimulationController();
     this.cesiumSimulationController.cesiumViewController.setUpViewer("cesium");
     this.cesiumSimulationController.getAndLoadNoFlyZones();
     this.cesiumSimulationController.getAndLoadTfrNoFlyZones();
-    
-    //PREVIOUS SETUP
-    //this.cesium.setUpViewer('cesium');
-    //this.cesium.getAndLoadNoFlyZones();
+
+    this.configureListener();
+  }
+
+  public configureListener(): void {
+    this.simulationController.events.noFllyZonesUpdated.addHandler(
+      (noFlyZones) => {
+        this.noFlyZone = noFlyZones;
+      }
+    );
+
+    this.simulationController.events.flightCreated.addHandler((flight) => {
+      this.planes = flight;
+    });
+
+    this.simulationController.events.message.addHandler((message) => {
+      this._snackBar.open(message.message, '', {
+        duration: 2000,
+      });
+    });
   }
 }
