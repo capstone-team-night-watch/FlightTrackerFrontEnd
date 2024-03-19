@@ -1,17 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ViewController } from './view.controller';
+import { CesiumViewController } from './view.controller';
 import { HttpClientModule } from '@angular/common/http';
 import { AppModule } from './app.module';
 
-describe('ViewController', () => {
-  let controller: ViewController;
+describe('CesiumViewController', () => {
+  let controller: CesiumViewController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [AppModule],
     });
-    controller = TestBed.inject(ViewController);
+    controller = TestBed.inject(CesiumViewController);
   });
 
   it('should be created', () => {
