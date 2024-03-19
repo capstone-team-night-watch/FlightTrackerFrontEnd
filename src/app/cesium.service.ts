@@ -16,7 +16,7 @@ import {
 import { TfrNoFly } from './objects/tfr-no-fly/tfr-no-fly';
 import { Url } from '../lib/utils/url';
 
-import { PlaceholderRepository } from './objects/placeholder-repository/placeholder-repository';//PLACEHOLDER
+import { PlaceholderRepository } from './objects/placeholder-repository/placeholder-repository'; //PLACEHOLDER
 
 declare const Cesium: any;
 
@@ -85,8 +85,8 @@ export class CesiumService {
   aeroFlightFaIdResponse: FlightDataFa_Id;
   aeroOperatorResponse: Operator;
 
-  placeholderRepository: PlaceholderRepository = new PlaceholderRepository();//PLACEHOLDER
-  
+  placeholderRepository: PlaceholderRepository = new PlaceholderRepository(); //PLACEHOLDER
+
   public updateFlightsAndZones(
     div: string,
     longitude: number,
@@ -129,7 +129,7 @@ export class CesiumService {
       this.militaryBases = this.entities.add(new Cesium.Entity());
 
       // Sets up frontend placeholder repository. Only necessary for testing without a backend.
-      this.placeholderRepository.setUpRepository();//PLACEHOLDER
+      this.placeholderRepository.setUpRepository(); //PLACEHOLDER
     }
   }
 
@@ -202,9 +202,9 @@ export class CesiumService {
     queryParams = queryParams.append('zoneName', zoneName);
 
     //this.placeholderRepository.deleteNoFlyZone(zoneName);
-    
+
     this.httpClient
-      .get<string>(Url.consumer("/deleteNoFlyZone"), {
+      .get<string>(Url.consumer('/deleteNoFlyZone'), {
         headers: this.httpHeaders,
         params: queryParams,
       })
@@ -253,13 +253,10 @@ export class CesiumService {
     queryParams = queryParams.append('altitude', altitude);
 
     return this.httpClient
-      .get<getNoFlyZonesConflictResponse>(
-        Url.consumer('/getInNoFlyZone'),
-        {
-          headers: this.httpHeaders,
-          params: queryParams,
-        }
-      )
+      .get<getNoFlyZonesConflictResponse>(Url.consumer('/getInNoFlyZone'), {
+        headers: this.httpHeaders,
+        params: queryParams,
+      })
       .pipe(
         tap((response) => {
           this.getNoFlyZoneConflictResponse = response;
@@ -277,13 +274,10 @@ export class CesiumService {
     queryParams = queryParams.append('latitude', latitude);
 
     return this.httpClient
-      .get<GetFlightLocationResponse>(
-        Url.consumer('/getFlightLocation'),
-        {
-          headers: this.httpHeaders,
-          params: queryParams,
-        }
-      )
+      .get<GetFlightLocationResponse>(Url.consumer('/getFlightLocation'), {
+        headers: this.httpHeaders,
+        params: queryParams,
+      })
       .pipe(
         tap((response) => {
           console.log('Flight location response recieved' + response.location);
@@ -354,180 +348,7 @@ export class CesiumService {
     }
   }
 
-  public getAndLoadNoFlyZones(): void {
-    console.log('Loading No FlyZones');
-
-    //CODE FOR PLACEHOLDER REPO
-    /*
-    let testPlane = this.placeholderRepository.getFlightByICAO("TS1234");
-    console.log("Should at least get here.");
-    if (testPlane != null) {
-    this.makePlane(this.global_viewer,
-      testPlane.ident_icao,
-      testPlane.last_position.latitude,
-      testPlane.last_position.longitude,
-      testPlane.last_position.altitude);
-      console.log("Should have made flight");
-    }
-    */
-    //PLACEHOLDER
-
-    //PLACEHOLDER
-    //this.getNoFlyZoneResponse = this.placeholderRepository.getNoFlyZonesResponse;
-    //THE ABOVE IS A PLACEHOLDER FOR THE FOLLOWING COMMENTED-OUT CODE
-    
-    this.httpClient
-      .get<GetNoFlyZonesResponse>(
-        Url.consumer('/get-no-fly-zones'),
-        this.httpOptions
-      )
-      .subscribe((data) => {
-        this.getNoFlyZoneResponse = data;
-        //console.log('ELLIPSOID NO FLY ZONES')
-        for (const ellipsoidNoFly of this.getNoFlyZoneResponse
-          .ellipsoidNoFlyZones) {
-          let contains: boolean = false;
-          this.global_viewer.entities.values.forEach((element: any) => {
-            if (element.name == ellipsoidNoFly.name) {
-              contains = true;
-            }
-          });
-
-          if (!contains) {
-            this.global_viewer.entities.add({
-              parent: this.ellipsoids,
-              name: ellipsoidNoFly.name,
-              position: Cesium.Cartesian3.fromDegrees(
-                Number(ellipsoidNoFly.longitude),
-                Number(ellipsoidNoFly.latitude),
-                Number(ellipsoidNoFly.altitude)
-              ),
-              ellipsoid: {
-                radii: new Cesium.Cartesian3(
-                  ellipsoidNoFly.longRadius,
-                  ellipsoidNoFly.latRadius,
-                  ellipsoidNoFly.altRadius
-                ),
-                material: Cesium.Color.RED.withAlpha(0.5),
-              },
-            });
-            //console.log(ellipsoidNoFly)
-          }
-        }
-
-        //console.log('RECTANGLE NO FLY ZONE')
-        for (const rectangleNoFly of this.getNoFlyZoneResponse
-          .rectangleNoFlyZones) {
-          let contains: boolean = false;
-          this.global_viewer.entities.values.forEach((element: any) => {
-            if (element.name == rectangleNoFly.name) {
-              contains = true;
-            }
-          });
-
-          if (!contains) {
-            this.global_viewer.entities.add({
-              parent: this.rectangles,
-              name: rectangleNoFly.name, // String name
-              rectangle: {
-                rotation: Cesium.Math.toRadians(
-                  Number(rectangleNoFly.rotationDegree)
-                ), // .toRadians( rotation value )
-                extrudedHeight: Number(rectangleNoFly.minAltitude), //Minimum Height
-                height: Number(rectangleNoFly.maxAltitude),
-                material: Cesium.Color.TEAL.withAlpha(0.5),
-                coordinates: Cesium.Rectangle.fromDegrees(
-                  Number(rectangleNoFly.westLongDegree),
-                  Number(rectangleNoFly.southLatDegree),
-                  Number(rectangleNoFly.eastLongDegree),
-                  Number(rectangleNoFly.northLatDegree)
-                ),
-              },
-            });
-            // console.log(rectangleNoFly)
-          }
-        }
-
-        //console.log('POLYGON NO FLY ZONE')
-        for (const polygonNoFly of this.getNoFlyZoneResponse
-          .polygonNoFlyZones) {
-          let contains: boolean = false;
-          this.global_viewer.entities.values.forEach((element: any) => {
-            if (element.name == polygonNoFly.name) {
-              contains = true;
-            }
-          });
-
-          if (!contains) {
-            this.global_viewer.entities.add({
-              parent: this.polygons,
-              name: polygonNoFly.name, //String Name
-
-              polygon: {
-                hierarchy: {
-                  positions: Cesium.Cartesian3.fromDegreesArrayHeights([
-                    polygonNoFly.vertex1Long,
-                    polygonNoFly.vertex1Lat,
-                    polygonNoFly.maxAltitude,
-                    polygonNoFly.vertex2Long,
-                    polygonNoFly.vertex2Lat,
-                    polygonNoFly.maxAltitude,
-                    polygonNoFly.vertex3Long,
-                    polygonNoFly.vertex3Lat,
-                    polygonNoFly.maxAltitude,
-                    polygonNoFly.vertex4Long,
-                    polygonNoFly.vertex4Lat,
-                    polygonNoFly.maxAltitude,
-                  ]),
-
-                  //shapeValues: Array ordered: vertex 1 Longitude, vertex 1 Latitude, max height, vertex 2 Longitude, vertex 2 Latitude, max height, ...
-                },
-                extrudedHeight: polygonNoFly.minAltitude, //int minimum height
-                perPositionHeight: true,
-                material: Cesium.Color.VIOLET.withAlpha(0.5),
-              },
-            });
-          }
-        }
-
-        //console.log("MILITARY NO FLY ZONES")
-        for (const militaryBase of this.getNoFlyZoneResponse
-          .militaryNoFlyZones) {
-          let data = JSON.parse(militaryBase.geoJson);
-
-          let contains: boolean = false;
-          this.global_viewer.entities.values.forEach((element: any) => {
-            if (element.name == militaryBase.name) {
-              contains = true;
-            }
-          });
-
-          let coords = data.coordinates.toString();
-          let coordArray = coords.split(',');
-
-          for (let i = 0; i < coordArray.length; i++) {
-            coordArray[i] = parseFloat(coordArray[i]);
-          }
-
-          if (!contains) {
-            this.global_viewer.entities.add({
-              parent: this.militaryBases,
-              name: militaryBase.name, //String Name
-              polygon: {
-                hierarchy: {
-                  positions: Cesium.Cartesian3.fromDegreesArray(coordArray),
-                  //shapeValues: Array ordered: vertex 1 Longitude, vertex 1 Latitude, max height, vertex 2 Longitude, vertex 2 Latitude, max height, ...
-                },
-                extrudedHeight: 30000, //int minimum height
-                perPositionHeight: true,
-                material: Cesium.Color.SALMON.withAlpha(0.5),
-              },
-            });
-          }
-        }
-    });
-  }
-
+  public getAndLoadNoFlyZones(): void {}
 
   public getAndLoadTfrNoFlyZones(): void {
     console.log('Loading TFR No FlyZones');
@@ -540,13 +361,12 @@ export class CesiumService {
       .subscribe((data) => {
         this.getTfrNoFlyZoneResponse = data;
 
-        console.log('TFR NO FLY ZONES')
+        console.log('TFR NO FLY ZONES');
         console.log(this.getTfrNoFlyZoneResponse);
         for (const tfrNoFly of this.getTfrNoFlyZoneResponse.tfrNoFlyZones) {
-          
-          if(tfrNoFly.notamType === "BOUNDARY") {
-            console.log('Boundary')
-            this.global_viewer.entities.add( {
+          if (tfrNoFly.notamType === 'BOUNDARY') {
+            console.log('Boundary');
+            this.global_viewer.entities.add({
               polygon: {
                 hierarchy: Cesium.Cartesian3.fromDegreesArray(tfrNoFly.latlong),
                 height: 0,
@@ -554,15 +374,15 @@ export class CesiumService {
                 outline: true,
                 outlineColor: Cesium.Color.BLACK,
               },
-            }
-            );
+            });
           }
 
-          if(tfrNoFly.notamType === "RADIUS") {
+          if (tfrNoFly.notamType === 'RADIUS') {
             this.global_viewer.entities.add({
               name: tfrNoFly.notamNumber,
               position: Cesium.Cartesian3.fromDegrees(
-                tfrNoFly.latlong[0], tfrNoFly.latlong[1]
+                tfrNoFly.latlong[0],
+                tfrNoFly.latlong[1]
               ),
               ellipse: {
                 semiMinorAxis: tfrNoFly.radius,
@@ -574,12 +394,9 @@ export class CesiumService {
             });
           }
           //console.log(ellipsoidNoFly)
-          
         }
-        
       });
   }
-
 
   flyToAndPlotPoint(
     longitude: number,
