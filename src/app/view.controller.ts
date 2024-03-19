@@ -25,7 +25,7 @@ Cesium.Ion.defaultAccessToken =
 @Injectable({
     providedIn: 'root',
 })
-export class ViewController {
+export class CesiumViewController {
     ellipsoidNoFly: EllipsoidNoFly = new EllipsoidNoFly();
     rectangleNoFly: RectangleNoFly = new RectangleNoFly();
     militaryBase: MilitaryBase = new MilitaryBase();
@@ -61,9 +61,6 @@ export class ViewController {
             this.rectangles = this.entities.add(new Cesium.Entity());
             this.polygons = this.entities.add(new Cesium.Entity());
             this.militaryBases = this.entities.add(new Cesium.Entity());
-
-            // Sets up frontend placeholder repository. Only necessary for testing without a backend.
-            //this.placeholderRepository.setUpRepository();//PLACEHOLDER
         }
     }
 
@@ -257,6 +254,7 @@ export class ViewController {
 
     public makeTrailLine(ICAOIn: string, coordsIn: number[] | undefined) {
         if (coordsIn != undefined) {
+            let formattedCoords = this.formatCoords(coordsIn);//Because the coords in Aero data come in the reverse order they need to be.
             this.global_viewer.entities.add({
                 name: ICAOIn,
                 parent: this.global_viewer.entities.getById(
@@ -264,13 +262,90 @@ export class ViewController {
                 ),
                 polyline: {
                 positions:
-                    Cesium.Cartesian3.fromDegreesArrayHeights(coordsIn),
+                    Cesium.Cartesian3.fromDegreesArray(formattedCoords),
                 width: 10,
                 material: Cesium.Color.PURPLE,
                 clampToGround: false,
                 },
             });
         }
+    }
+
+    public makePastLine(ICAOIn: string, latIn: number, longIn: number, flightObject: FlightDataFa_Id | undefined) {
+        if (flightObject != undefined && flightObject.waypoints.length > 0) {
+            this.global_viewer.entities.add({
+                name: ICAOIn,
+                parent: this.global_viewer.entities.getById(
+                'Flight ICAO: ' + ICAOIn
+                ),
+                polyline: {
+                positions:
+                    Cesium.Cartesian3.fromDegreesArray(longIn, latIn, flightObject.waypoints[1], flightObject.waypoints[0]),
+                width: 10,
+                material: Cesium.Color.PURPLE,
+                clampToGround: false,
+                },
+            });
+        } else {
+            this.global_viewer.entities.add({
+                name: ICAOIn,
+                parent: this.global_viewer.entities.getById(
+                'Flight ICAO: ' + ICAOIn
+                ),
+                polyline: {
+                positions:
+                    Cesium.Cartesian3.fromDegreesArray(longIn, latIn, flightObject?.last_position.longitude, flightObject?.last_position.longitude),
+                width: 10,
+                material: Cesium.Color.PURPLE,
+                clampToGround: false,
+                },
+            });
+        }
+    }
+
+    public makeFutureLine(ICAOIn: string, latIn: number, longIn: number, flightObject: FlightDataFa_Id | undefined) {
+        if (flightObject != undefined && flightObject.waypoints.length > 0) {
+            this.global_viewer.entities.add({
+                name: ICAOIn,
+                parent: this.global_viewer.entities.getById(
+                'Flight ICAO: ' + ICAOIn
+                ),
+                polyline: {
+                positions:
+                    Cesium.Cartesian3.fromDegreesArray(longIn, latIn, flightObject.waypoints[flightObject.waypoints.length-1], flightObject.waypoints.length-2),
+                width: 10,
+                material: Cesium.Color.PURPLE,
+                clampToGround: false,
+                },
+            });
+        } else {
+            this.global_viewer.entities.add({
+                name: ICAOIn,
+                parent: this.global_viewer.entities.getById(
+                'Flight ICAO: ' + ICAOIn
+                ),
+                polyline: {
+                positions:
+                    Cesium.Cartesian3.fromDegreesArray(longIn, latIn, flightObject?.last_position.longitude, flightObject?.last_position.longitude),
+                width: 10,
+                material: Cesium.Color.PURPLE,
+                clampToGround: false,
+                },
+            });
+        }
+    }
+
+    public formatCoords(coordsIn: number[]) {
+        let newCoords = coordsIn;
+        let transferNum = null;
+
+        for (let i = 0; i < newCoords.length; i = i + 2) {
+            transferNum = newCoords[i];
+            newCoords[i] = newCoords[i+1];
+            newCoords[i+1] = transferNum;
+        }
+
+        return newCoords;
     }
 
     public makeConflictBillboard(pointIn: any, intersectedNoFlyZone: string | undefined,
