@@ -16,28 +16,8 @@ import { NoFlyZone } from './simulation-entities/no-fly-zone';
 import { Ack } from './socket-events/socker-ack';
 import { Flight } from 'src/app/objects/flight/flight';
 import { DeepReadonly } from './utils/types';
+import { ClientToServerEvents, ServerToClientEvents } from './socket-events/socket-events-type';
 
-interface ClientToServerEvents {
-  'health-check': (data: String) => void;
-  'join-rooms': (data: JoinRoomPayload, callback: (ack: Ack) => void) => void;
-  'leave-rooms': (data: LeaveRoomPayload) => void;
-}
-
-interface ServerToClientEvents {
-  'no-fly-zone-created': (data: NoFlyZoneCreatedMessage) => void;
-  'flight-location-updated': (data: FlightLocationUpdatedMessage) => void;
-
-  'flight-created': (data: FlightInformation) => void;
-
-  'active-flight': (data: FlightInformation) => void;
-  'active-no-fly-zone': (data: NoFlyZoneInfo) => void;
-
-  'health-check': (data: string) => void;
-  'broadcast-health-check': (data: string) => void;
-  healthcheck: (data: string) => void;
-  basicEmit: (a: number, b: string,  c: Buffer) => void;
-  withAck: (d: string, callback: (e: number) => void) => void;
-}
 
 export class SimulationController {
   public events = {
