@@ -7,7 +7,7 @@ import { CesiumService } from '../cesium.service';
 import { NoFlyZoneGenerateDialog } from '../no-fly-zone-generate-dialog/no-fly-zone-generate-dialog.component';
 import { AirportGenerateFlightRequest } from '../objects/generate-flight/airport-generate-flight-request';
 import { Url } from '../../lib/utils/url';
-import { SimulationController } from '../simulation.controller';
+import { CesiumSimulationController } from '../simulation.controller';
 
 @Component({
   selector: 'app-cesium-showcase',
@@ -46,7 +46,7 @@ export class CesiumShowcaseComponent implements OnInit, OnChanges {
 
   constructor(private httpClient: HttpClient,
     public dialog: MatDialog,
-    private simulationController: SimulationController,
+    private cesiumSimulationController: CesiumSimulationController,
     private cesium: CesiumService) { }
 
   getLiveFlightIcaos(): void {
@@ -78,11 +78,11 @@ export class CesiumShowcaseComponent implements OnInit, OnChanges {
     this.cesium.getAndLoadTfrNoFlyZones();
     */
 
-    //this.simulationController.placeholderRepository.setUpRepository();
+    //this.cesiumSimulationController.placeholderRepository.setUpRepository();
     
-    this.simulationController.viewController.setUpViewer("cesium");
-    this.simulationController.getAndLoadNoFlyZones();
-    this.simulationController.getAndLoadTfrNoFlyZones();
+    this.cesiumSimulationController.cesiumViewController.setUpViewer("cesium");
+    this.cesiumSimulationController.getAndLoadNoFlyZones();
+    this.cesiumSimulationController.getAndLoadTfrNoFlyZones();
     
   }
 
@@ -92,12 +92,12 @@ export class CesiumShowcaseComponent implements OnInit, OnChanges {
 
   getTrackedFlights() {
     //this.tracked_flight_list = this.cesium.getTrackedFlights();
-    this.tracked_flight_list = this.simulationController.getTrackedFlights();
+    this.tracked_flight_list = this.cesiumSimulationController.getTrackedFlights();
     this.are_tracked_visible = !this.are_tracked_visible;
   }
   findFlight(flight : string){
       //this.cesium.findFlight(flight);
-      this.simulationController.findFlight(flight);
+      this.cesiumSimulationController.findFlight(flight);
   }
 
   setFlightIcao(icao: string): void {
