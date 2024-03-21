@@ -378,6 +378,36 @@ export class CesiumViewController {
         };
     }
 
+    public makeWarningBillboard(pointIn: any, intersectedNoFlyZone: string | undefined,
+        flightInfo: FlightDataFa_Id, flightICAO: string, airlineName: string, aboveLocation: string,
+        flightLatitude: number, flightLongitude: number, flightAltitude: number) {
+        pointIn.description = pointIn.description = `
+            <p>Flight ICAO: ${flightICAO} is close to intersecting no fly zone: ${intersectedNoFlyZone}<br>
+            For Airline: ${airlineName}</p><br>
+            Flight location is over ${aboveLocation}<br>
+            Origin Place: ${flightInfo?.origin.name}<br>
+            Takeoff Time: ${flightInfo?.actual_off}<br>
+            Destination: ${flightInfo?.destination?.name}<br>
+            GroundSpeed: ${flightInfo?.last_position?.groundspeed}<br>
+            Flight Latitude: ${flightLatitude}<br>
+            Flight Longitude: ${flightLongitude}<br>
+            Flight Altitude: ${flightAltitude}<br>
+            Altitude Change: ${flightInfo?.last_position?.altitude_change}<br>
+            Heading: ${flightInfo?.last_position?.heading}<br>
+            Aircraft Type: ${flightInfo?.aircraft_type}<br>
+            Time latest position received: ${flightInfo?.last_position?.timestamp}
+        `;
+
+        this.global_viewer.selectedEntity = pointIn;
+        pointIn.billboard = {
+            image: '/assets/images/EarlyWarningLabel.png',
+            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+            pixelOffset: new Cesium.Cartesian2(0, 35),
+            width: 57,
+            height: 15,
+        };
+    }
+  
     public makeFlightBillboard(pointIn: any, flightInfo: FlightDataFa_Id, flightICAO: string, aboveLocation: string,
         airlineName: string, flightLatitude: number, flightLongitude: number, flightAltitude: number) {
         pointIn.description = pointIn.description = `
