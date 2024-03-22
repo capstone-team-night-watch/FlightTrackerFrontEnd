@@ -16,20 +16,23 @@
             "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "./node_modules/cesium/Build/Cesium",
+                "output": "./assets/cesium"
+              }
             ],
             "styles": [
-              "src/custom-theme.scss",
+              "./node_modules/cesium/Build/Cesium/Widgets/widgets.css",
               "src/styles.css",
-              "src/assets/Cesium/Widgets/widgets.css"
+              "src/custom-theme.scss"
             ],
-            "scripts": ["src/assets/Cesium/Cesium.js"]
+            "scripts": ["./node_modules/cesium/Build/Cesium/Cesium.js"]
           },
           "configurations": {
             "production": {
@@ -37,7 +40,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "4mb",
-                  "maximumError": "6mb"
+                  "maximumError": "19mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -85,23 +88,23 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
+            "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "./node_modules/cesium/Build/Cesium",
+                "output": "./assets/cesium"
+              }
             ],
             "styles": [
-              "src/custom-theme.scss",
+              "./node_modules/cesium/Build/Cesium/Widgets/widgets.css",
               "src/styles.css",
-              "src/assets/Cesium/Widgets/widgets.css"
+              "src/custom-theme.scss"
             ],
-            "scripts": [
-              "src/assets/Cesium/Cesium.js"
-            ],
+            "scripts": ["./node_modules/cesium/Build/Cesium/Cesium.js"],
             "karmaConfig": "karma.conf.js"
           }
         },

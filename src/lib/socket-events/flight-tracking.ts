@@ -1,7 +1,4 @@
-import {
-  GeographicCoordinates2D,
-  GeographicCoordinates3D,
-} from '../simulation-entities/coordinattes';
+import { GeographicCoordinates2D, GeographicCoordinates3D } from "../simulation-entities/coordinattes";
 
 export type FlightInformation = {
   /**

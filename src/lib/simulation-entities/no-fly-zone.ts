@@ -1,4 +1,7 @@
+import { Entity } from "cesium"
+import { NoFlyZoneInfo } from "../socket-events/no-fly-zone-tracking"
 
-export class NoFlyZone {
-    
-}
+export type NoFlyZone = {
+    info: NoFlyZoneInfo,
+    cesiumEntity: Entity,
+} 
