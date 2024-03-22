@@ -17,16 +17,22 @@
         <div class="selection">
           <ul>
             <div>NoFly Zones</div>
-            <li *ngFor="let item of noFlyZone">
-              {{ item.id }}
-            </li>
+            <button
+              (click)="simulationRenderer.focus(item.cesiumEntity)"
+              *ngFor="let item of noFlyZones"
+            >
+              {{ item.info.id }}
+            </button>
           </ul>
 
-          <ul >
+          <ul>
             <div>Flights</div>
-            <li *ngFor="let item of planes">
-              {{ item.flightId }}
-            </li>
+            <button
+              (click)="simulationRenderer.focus(item.cesiumEntity)"
+              *ngFor="let item of flights"
+            >
+              {{ item.flightInformation.flightId }}
+            </button>
           </ul>
         </div>
       </div>

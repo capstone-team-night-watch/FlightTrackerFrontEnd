@@ -1,5 +1,4 @@
-
-import { GeographicCoordinates3D } from '../simulation-entities/coordinattes';
+import { GeographicCoordinates2D, GeographicCoordinates3D } from '../simulation-entities/coordinattes';
 
 export type FlightInformation = {
   /**
@@ -11,6 +10,11 @@ export type FlightInformation = {
    * Current location of the plane
    */
   location: GeographicCoordinates3D;
+
+  /**
+   * List of points the plane will pass though during the flight
+   */
+  checkPoints?: GeographicCoordinates2D[];
 
   /**
    * Describes the group speed of the plan in miles per second
