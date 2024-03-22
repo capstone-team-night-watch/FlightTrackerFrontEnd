@@ -3,98 +3,37 @@ import { SimulationEvent } from './SimulationEvent';
 import { SimulationMessage } from './simulation-events';
 import { Url } from './utils/url';
 import { SimulationRenderer } from './SimulationRenderer';
-import {
-  JoinRoomPayload,
-  LeaveRoomPayload,
-} from './socket-events/room-management';
-import {
-  FlightInformation,
-  FlightLocationUpdatedMessage,
-} from './socket-events/flight-tracking';
+import { FlightInformation, FlightLocationUpdatedMessage } from './socket-events/flight-tracking';
 import { NoFlyZoneCreatedMessage, NoFlyZoneInfo } from './socket-events/no-fly-zone-tracking';
-import { NoFlyZone } from './simulation-entities/no-fly-zone';
-import { Ack } from './socket-events/socker-ack';
-import { Flight } from 'src/app/objects/flight/flight';
 import { DeepReadonly } from './utils/types';
-
-interface ClientToServerEvents {
-  'health-check': (data: String) => void;
-  'join-rooms': (data: JoinRoomPayload, callback: (ack: Ack) => void) => void;
-  'leave-rooms': (data: LeaveRoomPayload) => void;
-}
-
-interface ServerToClientEvents {
-  'no-fly-zone-created': (data: NoFlyZoneCreatedMessage) => void;
-  'flight-location-updated': (data: FlightLocationUpdatedMessage) => void;
-
-  'flight-created': (data: FlightInformation) => void;
-
-  'active-flight': (data: FlightInformation) => void;
-  'active-no-fly-zone': (data: NoFlyZoneInfo) => void;
-
-  'health-check': (data: string) => void;
-  'broadcast-health-check': (data: string) => void;
-  healthcheck: (data: string) => void;
-  basicEmit: (a: number, b: string,  c: Buffer) => void;
-  withAck: (d: string, callback: (e: number) => void) => void;
-}
+import { ClientToServerEvents, ServerToClientEvents } from './socket-events/socket-signature';
+import { NoFlyZone } from './simulation-entities/no-fly-zone';
+import { Plane } from './simulation-entities/plane';
+import { Entity } from 'cesium';
 
 export class SimulationController {
   public events = {
-    noFllyZonesUpdated: new SimulationEvent<DeepReadonly<NoFlyZoneInfo[]>>(),
-    flightCreated: new SimulationEvent<DeepReadonly<FlightInformation[]>>(),
+    flightListUpdated: new SimulationEvent<DeepReadonly<Plane[]>>(),
+    noFlyZoneListUpdated: new SimulationEvent<DeepReadonly<NoFlyZone[]>>(),
+
     message: new SimulationEvent<DeepReadonly<SimulationMessage>>(),
   };
 
   private renderer: SimulationRenderer;
 
-  private noFlyZones: NoFlyZoneInfo[] = [];
-  private flights: FlightInformation[] = [];
+  private plane: Plane[] = [];
+  private noFlyZones: NoFlyZone[] = [];
 
   private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
-  constructor() {
+  constructor(renderer: SimulationRenderer) {
+    this.renderer = renderer;
     this.socket = io(Url.socket());
-    this.configureSocketConnection();
   }
 
-  private configureSocketConnection(): void {
-    this.socket.on('no-fly-zone-created', (data: NoFlyZoneCreatedMessage) => {
-      this.noFlyZones.push(data.noFlyZone);
-      this.events.noFllyZonesUpdated.trigger(this.noFlyZones);
-    });
-
-
-    this.socket.on('active-no-fly-zone', (data: NoFlyZoneInfo) => {
-      this.noFlyZones.push(data);
-      this.events.noFllyZonesUpdated.trigger(this.noFlyZones);
-    });
-
-    this.socket.on(
-      'flight-location-updated',
-      (data: FlightLocationUpdatedMessage) => {
-        // Simplly notify the event handler that a flight has been updated
-        // Will include more complex logic in the future
-        this.events.message.trigger({
-          message: `The location of flight with id ${
-            data.flightInformation.flightId
-          } has been created ${JSON.stringify(data, null, 2)}`,
-        });
-      }
-    );
-
-    this.socket.on('flight-created', (data) => {
-      this.flights.push(data);
-      this.events.flightCreated.trigger(this.flights);
-    });
-
-    this.socket.on('active-flight', (data) => {
-      // Join room of the specific flight
-      this.joinRoom([data.flightId]);
-
-      this.flights.push(data);
-      this.events.flightCreated.trigger(this.flights);
-    });
+  public initialize(): void {
+    this.handleFlightEvents();
+    this.handleNoFlyZoneEvents();
 
     // Join relevant rooms
     this.joinRoom(['no-fly-zone-room', 'flight-information-lobby']);
@@ -102,10 +41,70 @@ export class SimulationController {
     this.performServerHealthCheck();
   }
 
+  private handleFlightEvents() {
+    // Handle the update of the location or expected path of a flight
+    this.socket.on('flight-location-updated', (data: FlightLocationUpdatedMessage) => {
+      const targetFlight = this.plane.find(
+        (plane) => plane.flightInformation.flightId === data.flightInformation.flightId
+      );
+
+      if (targetFlight === undefined) {
+        console.error('We received notification of the existence of the flight that we are not tracking');
+        return;
+      }
+
+      this.renderer.updateFlightLocation(targetFlight.cesiumEntity, data.flightInformation);
+    });
+
+    // Handle the creation of a new flight
+    this.socket.on('flight-created', (flightInformation) => {
+      this.joinRoom([flightInformation.flightId]);
+      this.createPlane(flightInformation);
+    });
+
+    // Handle the notifiation upon room entrance of the list of flight that are active
+    this.socket.on('active-flight', (flightInformation) => {
+      // Join room of the specific flight
+      this.joinRoom([flightInformation.flightId]);
+      this.createPlane(flightInformation);
+    });
+  }
+
+  private async createPlane(flightInformation: FlightInformation): Promise<void> {
+    let plane = {
+      isTracked: true,
+      flightInformation: flightInformation,
+      cesiumEntity: await this.renderer.createFlight(flightInformation),
+    } satisfies Plane;
+
+    this.plane.push(plane);
+    this.events.flightListUpdated.trigger(this.plane);
+  }
+
+  private handleNoFlyZoneEvents() {
+    this.socket.on('no-fly-zone-created', (message: NoFlyZoneCreatedMessage) => {
+      this.createNoFlyZone(message.noFlyZone);
+    });
+
+    this.socket.on('active-no-fly-zone', (noFlyZone: NoFlyZoneInfo) => {
+      this.createNoFlyZone(noFlyZone);
+    });
+  }
+
+  private createNoFlyZone(noFlyZoneInfo: NoFlyZoneInfo): void {
+    let noFlyZone = {
+      info: noFlyZoneInfo,
+      cesiumEntity: this.renderer.CreateNoFlyZone(noFlyZoneInfo),
+    } satisfies NoFlyZone;
+
+    this.noFlyZones.push(noFlyZone);
+    this.events.noFlyZoneListUpdated.trigger(this.noFlyZones);
+  }
+
   private performServerHealthCheck(): void {
     this.socket.on('health-check', (data: string) => {
       this.events.message.trigger({
-        message: data,
+        message: 'Established connection with the server',
       });
     });
 
@@ -125,10 +124,4 @@ export class SimulationController {
       }
     );
   }
-
-  private createNoFlyZone(noFlyZone: NoFlyZone): void {}
-
-  private createPlane(flightInformation: FlightInformation): void {}
-
-  private updatePlaneLocation(flightInformation: FlightInformation): void {}
 }

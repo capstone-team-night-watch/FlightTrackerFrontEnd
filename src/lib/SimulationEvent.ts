@@ -1,21 +1,29 @@
+import { Observable } from 'rxjs';
+
 export type GraphEventHandler<T> = (event: T) => void;
 
 export class SimulationEvent<T> {
-    private handlers: GraphEventHandler<T>[] = [];
+  private handlers: GraphEventHandler<T>[] = [];
 
-    public addHandler(handler: GraphEventHandler<T>): void {
-        this.handlers.push(handler);
+  public addHandler(handler: GraphEventHandler<T>): void {
+    this.handlers.push(handler);
+  }
+
+  public removeHandler(handler: GraphEventHandler<T>): void {
+    const index = this.handlers.indexOf(handler);
+
+    if (index > -1) {
+      this.handlers.splice(index, 1);
     }
+  }
 
-    public removeHandler(handler: GraphEventHandler<T>) : void {
-        const index = this.handlers.indexOf(handler);
+  public trigger(event: T): void {
+    this.handlers.forEach((handler) => handler(event));
+  }
 
-        if (index > -1) {
-            this.handlers.splice(index, 1);
-        }
-    }
-
-    public trigger(event: T): void {
-        this.handlers.forEach(handler => handler(event));
-    }
+  public intoObservable(): Observable<T> {
+    return new Observable<T>((observer) => {
+      this.addHandler((event) => observer.next(event));
+    });
+  }
 }

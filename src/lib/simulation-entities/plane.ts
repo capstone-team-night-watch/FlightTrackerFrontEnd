@@ -1,4 +1,8 @@
+import { Entity } from "cesium";
+import { FlightInformation } from "../socket-events/flight-tracking";
 
-export class Plane {
-
+export type Plane = {
+    isTracked: boolean,
+    cesiumEntity: Readonly<Entity>,
+    flightInformation: FlightInformation,
 }

@@ -1,2 +1,0 @@
-import { Flight } from './flight';
-
