@@ -7,9 +7,9 @@ export namespace Url {
 
   export function socket(path?: string): string {
     if (path === undefined) {
-      return environment.socketUrl;
+      return window.location.hostname + environment.socketUrl;
     }
 
-    return environment.socketUrl + path ?? '';
+    return window.location.hostname + environment.socketUrl + path ?? '';
   }
 }
