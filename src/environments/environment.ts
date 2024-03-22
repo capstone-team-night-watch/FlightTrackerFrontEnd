@@ -1,5 +1,5 @@
 export const environment = {
-    consumerBaseUrl: './api/consumer',
-    producerBaseUrl : './localhost/api/producer',
-    socketUrl : '/localhost/api/websocket',
+    consumerBaseUrl: 'http://localhost/api/consumer',
+    producerBaseUrl : 'http://localhost/api/producer',
+    socketUrl : 'http://localhost/api/websocket',
 };
