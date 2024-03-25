@@ -14,6 +14,7 @@ import {
   CatmullRomSpline,
   HeadingPitchRoll,
   Transforms,
+  HeadingPitchRange,
 } from 'cesium';
 import { NoFlyZone } from 'src/lib/simulation-entities/no-fly-zone';
 import { CircularNoFlyZone, NoFlyZoneInfo, PolygonNoFlyZone } from 'src/lib/socket-events/no-fly-zone-tracking';
@@ -42,23 +43,12 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
     Object.assign(entity, newFlight);
   }
 
-  focus(entity: DeepReadonly<Entity>): void {
-    const entityPosition = entity?.position?.getValue(this.viewer.clock.currentTime);
+  focus(redonlyEntity: DeepReadonly<Entity>): void {
+    const entity = redonlyEntity as Entity;
 
-    if (entityPosition === undefined) {
-      console.error('Failed to navigate to entity because entity has no position');
-      return;
-    }
+    const offset = new HeadingPitchRange(Math.toRadians(90), Math.toRadians(-90), 1_000_000);
 
-    const entityPositionCartesian = Cartographic.fromCartesian(entityPosition);
-
-    this.viewer.camera.flyTo({
-      destination: Cartesian3.fromRadians(
-        entityPositionCartesian.longitude,
-        entityPositionCartesian.latitude,
-        2_000_000
-      ),
-    });
+    this.viewer.flyTo(entity, { offset });
   }
 
   RemoveNoFlyZone(zone: NoFlyZone): void {
@@ -99,7 +89,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
 
     const pitch = 0;
     const roll = 0;
-    
+
     const heading = Math.toRadians(flight.heading);
     const hpr = new HeadingPitchRoll(heading, pitch, roll);
     const orientation = Transforms.headingPitchRollQuaternion(newPosition, hpr);
