@@ -156,6 +156,8 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
       return Cartesian3.fromDegrees(vertice.longitude, vertice.latitude, 0);
     });
 
+    console.log(coordinates);
+
     return this.viewer.entities.add({
       parent: undefined,
       name: noFlyZone.id, // String name
@@ -164,9 +166,9 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
         outlineColor: Color.BLACK,
         material: Color.fromCssColorString(this.theme.noFlyZoneColor),
 
+        extrudedHeight: 0.0,
         height: noFlyZone.altitude,
         heightReference: HeightReference.RELATIVE_TO_GROUND,
-        extrudedHeight: 0.0,
         extrudedHeightReference: HeightReference.CLAMP_TO_GROUND,
       },
     });
