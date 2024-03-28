@@ -53,12 +53,12 @@ describe('CesiumComponentComponent', () => {
           longitude: -95.995102,
         },
         {
-          latitude: 41.25716,
+          latitude: 20.25716,
           longitude: -95.995102,
         },
         {
-          latitude: 41.25716,
-          longitude: -95.995102,
+          latitude: 30.25716,
+          longitude: -85.995102,
         },
       ],
     });

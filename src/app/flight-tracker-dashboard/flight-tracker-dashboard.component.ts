@@ -61,7 +61,47 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       console.log('things');
       this.simulationController.initialize();
     }, 2000);
+
+    this.addTestData(); 
   }
 
-  public configureListener(): void {}
+  public addTestData(): void {
+    this.simulationRenderer.CreateCircularNoFlyZone({
+      id: 'No Fly Zone Id',
+      altitude: 100_000,
+      createdAt: 'Now brother',
+      notamNumber: ' NO Fly zon enumber',
+      type: 'CIRCLE',
+      radius: 2000,
+      center: {
+        latitude: 41.25716,
+        longitude: -95.995102,
+      },
+    });
+
+
+    var stuff  = this.simulationRenderer.CreatePolygonNoFlyZone({
+      id: 'No Fly Zone Id',
+      altitude: 100_000,
+      createdAt: 'Now brother',
+      notamNumber: ' NO Fly zon enumber',
+      type: 'POLYGON',
+      vertices: [
+        {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+        {
+          latitude: 20.25716,
+          longitude: -95.995102,
+        },
+        {
+          latitude: 30.25716,
+          longitude: -85.995102,
+        },
+      ],
+    });
+
+    this.simulationRenderer.focus(stuff);
+  }
 }
