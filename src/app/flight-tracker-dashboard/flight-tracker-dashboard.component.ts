@@ -70,7 +70,7 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       id: 'No Fly Zone Id',
       altitude: 100_000,
       createdAt: 'Now brother',
-      notamNumber: ' NO Fly zon enumber',
+      notamNumber: ' NO Fly zone number',
       type: 'CIRCLE',
       radius: 2000,
       center: {
@@ -84,7 +84,7 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       id: 'No Fly Zone Id',
       altitude: 100_000,
       createdAt: 'Now brother',
-      notamNumber: ' NO Fly zon enumber',
+      notamNumber: ' NO Fly zone number',
       type: 'POLYGON',
       vertices: [
         {
@@ -102,6 +102,105 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       ],
     });
 
-    this.simulationRenderer.focus(stuff);
+    let check = this.simulationRenderer.drawPath([
+      {latitude: 35, longitude: -60},
+      {latitude: 45, longitude: -70},
+      {latitude: 55, longitude: -80},
+    ], 'TS1234');
+
+    this.simulationRenderer.drawAlternatePath({
+      flightId: 'TS1234',
+      location: {
+        latitude: 45,
+        longitude: -70,
+        altitude: 300,
+      },
+      groundSpeed: 500,
+      heading: 135,
+      source: {
+        name: 'KJFK',
+        icaoCode: 'KJFK',
+        coordinates: {latitude: 35, longitude: -60,},
+      },
+      destination: {
+        name: 'IDEK',
+        icaoCode: 'IDEK',
+        coordinates: {latitude: 55, longitude: -80,},
+      },
+      checkPoints: [
+        {latitude: 35, longitude: -60},
+        {latitude: 45, longitude: -75},
+        {latitude: 55, longitude: -80},
+      ],
+    }, {
+      name: 'TST3',
+      icaoCode: 'TST3',
+      coordinates: {latitude: 45, longitude: -50,},
+    });
+
+    let firstFlight = this.simulationRenderer.createFlight({
+      flightId: 'TS1234',
+      location: {
+        latitude: 45,
+        longitude: -70,
+        altitude: 300,
+      },
+      groundSpeed: 500,
+      heading: 135,
+      source: {
+        name: 'TST1',
+        icaoCode: 'TST1',
+        coordinates: {latitude: 35, longitude: -60,},
+      },
+      destination: {
+        name: 'TST2',
+        icaoCode: 'TST2',
+        coordinates: {latitude: 55, longitude: -80,},
+      },
+      checkPoints: [
+        {latitude: 35, longitude: -60},
+        {latitude: 45, longitude: -70},
+        {latitude: 55, longitude: -80},
+      ],
+    });
+
+    this.simulationRenderer.drawTrackedPath({
+      flightId: 'TS1234',
+      location: {
+        latitude: 45,
+        longitude: -70,
+        altitude: 300,
+      },
+      groundSpeed: 500,
+      heading: 135,
+      source: {
+        name: 'TST1',
+        icaoCode: 'TST1',
+        coordinates: {latitude: 35, longitude: -60,},
+      },
+      destination: {
+        name: 'TST2',
+        icaoCode: 'TST2',
+        coordinates: {latitude: 55, longitude: -80,},
+      },
+      checkPoints: [
+        {latitude: 35, longitude: -60},
+        {latitude: 40, longitude: -65},
+        {latitude: 45, longitude: -70},
+        {latitude: 50, longitude: -75},
+        {latitude: 55, longitude: -80},
+      ],
+    }, [
+      {latitude: 43, longitude: -70},
+      {latitude: 47, longitude: -70},
+    ]);
+
+    this.simulationRenderer.createAirport({
+      name: 'KJFK',
+      icaoCode: 'KJFK',
+      coordinates: {latitude: 40.641766, longitude: -73.780968,},
+    });
+
+    //this.simulationRenderer.focus(stuff);
   }
 }
