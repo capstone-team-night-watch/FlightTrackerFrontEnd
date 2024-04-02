@@ -199,4 +199,8 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
       },
     });
   }
+
+  public getViewer() {
+    return this.viewer;
+  }
 }
