@@ -406,4 +406,8 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
 
     return newTrackedLine;
   }
+
+  public getViewer() {
+    return this.viewer;
+  }
 }
