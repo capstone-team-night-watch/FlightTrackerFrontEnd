@@ -3,6 +3,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CesiumComponentComponent } from './cesium-component.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AppModule } from '../app.module';
+import {
+  JulianDate,
+  Entity,
+  Matrix4,
+  EntityCollection,
+  Event,
+  ModelGraphics,
+  Property,
+  PositionProperty,
+  SampledPositionProperty,
+  ConstantProperty,
+} from 'cesium';
+import { FlightInformation } from 'src/lib/socket-events/flight-tracking';
+import { GeographicCoordinates2D } from 'src/lib/simulation-entities/coordinattes';
 
 describe('CesiumComponentComponent', () => {
   let component: CesiumComponentComponent;
@@ -64,5 +78,57 @@ describe('CesiumComponentComponent', () => {
     });
 
     expect(noFlyZone).toBeTruthy();
+  });
+
+  it('should create flight', async () => {
+    let flight: FlightInformation = {
+      flightId: 'testFlight',
+      location: {
+        latitude: 10,
+        longitude: 20,
+        altitude: 30,
+      },
+      groundSpeed: 100,
+      heading: 32,
+      source: {
+        name: 'sourceName',
+        icaoCode: 'sourceIcao',
+        coordinates: {
+          latitude: 120,
+          longitude: 120,
+        },
+      },
+      destination: {
+        name: 'destinationName',
+        icaoCode: 'destinationIcao',
+        coordinates: {
+          latitude: 150,
+          longitude: 150,
+        },
+      },
+      checkPoints: [],
+    };
+
+    let planeEntity = component.createFlight(flight);
+
+    expect(planeEntity).toBeTruthy();
+  });
+
+  it('should draw path and return entity', () => {
+    let coordinates: GeographicCoordinates2D[] = [];
+
+    coordinates.push({
+      latitude: 10,
+      longitude: 30,
+    });
+
+    coordinates.push({
+      latitude: 3000,
+      longitude: 5000,
+    });
+
+    component.drawPath(coordinates, 'name');
+
+    expect(component.getViewer().entities.values.length).toEqual(1);
   });
 });
