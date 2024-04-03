@@ -255,8 +255,6 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
   public drawPath(checkpoints: GeographicCoordinates2D[], name: string): Entity {
     const times = checkpoints.map((_, index) => index / (checkpoints.length - 1));
 
-    console.log("here",times, checkpoints);
-
     const spline = new CatmullRomSpline({
       times: times,
       points: checkpoints.map((checkpoint) => Cartesian3.fromDegrees(checkpoint.longitude, checkpoint.latitude, 0)),
