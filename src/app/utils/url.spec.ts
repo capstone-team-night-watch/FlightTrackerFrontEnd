@@ -1,4 +1,4 @@
-import { Url } from './url';
+import { Url } from "src/lib/utils/url";
 
 describe('Url', () => {
   it('should append the provided path to the producer base URL', () => {
@@ -6,7 +6,7 @@ describe('Url', () => {
 
     const expected = '/producer';
 
-    expect(Url.producer(path)).toEqual(expected);
+    expect(Url.socket(path)).toEqual(expected);
   });
 
   it('should append the provided path to the consumer base URL', () => {

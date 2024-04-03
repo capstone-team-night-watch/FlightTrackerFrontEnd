@@ -7,8 +7,9 @@ import { FormControl } from '@angular/forms';
 import { DeepReadonly } from 'src/lib/utils/types';
 import { FlightInformation } from 'src/lib/socket-events/flight-tracking';
 import { NoFlyZoneInfo } from 'src/lib/socket-events/no-fly-zone-tracking';
-import { NoFlyZone } from 'src/lib/simulation-entities/no-fly-zone';
+import { NoFlyZoneEntity } from 'src/lib/simulation-entities/no-fly-zone';
 import { Plane } from 'src/lib/simulation-entities/plane';
+import { PersistenceService } from '../shared/persistence.service';
 
 @Component({
   selector: 'app-flight-tracker-dashboard',
@@ -23,17 +24,17 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
   public filter = new FormControl('');
 
   public flights$: Observable<DeepReadonly<Plane[]>>;
-  public noFlyZones$: Observable<DeepReadonly<NoFlyZone[]>>;
+  public noFlyZones$: Observable<DeepReadonly<NoFlyZoneEntity[]>>;
 
   public flights: DeepReadonly<Plane[]> = [];
-  public noFlyZones: DeepReadonly<NoFlyZone[]> = [];
+  public noFlyZones: DeepReadonly<NoFlyZoneEntity[]> = [];
 
-  constructor(private _snackBar: MatSnackBar) {}
+  constructor(private _snackBar: MatSnackBar, private persistenceService: PersistenceService) {}
 
   ngAfterViewInit() {
     this.simulationRenderer.initialize();
 
-    this.simulationController = new SimulationController(this.simulationRenderer);
+    this.simulationController = new SimulationController(this.simulationRenderer, this.persistenceService);
 
     this.flights$ = this.simulationController.events.flightListUpdated.intoObservable();
     this.noFlyZones$ = this.simulationController.events.noFlyZoneListUpdated.intoObservable();
@@ -62,7 +63,7 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       this.simulationController.initialize();
     }, 2000);
 
-    this.addTestData(); 
+    this.addTestData();
   }
 
   public addTestData(): void {
@@ -79,8 +80,7 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       },
     });
 
-
-    var stuff  = this.simulationRenderer.CreatePolygonNoFlyZone({
+    var stuff = this.simulationRenderer.CreatePolygonNoFlyZone({
       id: 'No Fly Zone Id',
       altitude: 100_000,
       createdAt: 'Now brother',
@@ -102,41 +102,43 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       ],
     });
 
-    let check = this.simulationRenderer.drawPath([
-      {latitude: 35, longitude: -60},
-      {latitude: 45, longitude: -70},
-      {latitude: 55, longitude: -80},
-    ], 'TS1234');
-
-    this.simulationRenderer.drawAlternatePath({
-      flightId: 'TS1234',
-      location: {
-        latitude: 45,
-        longitude: -70,
-        altitude: 300,
-      },
-      groundSpeed: 500,
-      heading: 135,
-      source: {
-        name: 'KJFK',
-        icaoCode: 'KJFK',
-        coordinates: {latitude: 35, longitude: -60,},
-      },
-      destination: {
-        name: 'IDEK',
-        icaoCode: 'IDEK',
-        coordinates: {latitude: 55, longitude: -80,},
-      },
-      checkPoints: [
-        {latitude: 35, longitude: -60},
-        {latitude: 45, longitude: -75},
-        {latitude: 55, longitude: -80},
+    let check = this.simulationRenderer.drawPath(
+      [
+        { latitude: 35, longitude: -60 },
+        { latitude: 45, longitude: -70 },
+        { latitude: 55, longitude: -80 },
       ],
-    }, {
-      name: 'TST3',
-      icaoCode: 'TST3',
-      coordinates: {latitude: 45, longitude: -50,},
-    });
+      'TS1234'
+    );
+
+    this.simulationRenderer.drawAlternatePath(
+      {
+        flightId: 'TS1234',
+        location: {
+          latitude: 45,
+          longitude: -70,
+          altitude: 300,
+        },
+        groundSpeed: 500,
+        heading: 135,
+        source: {
+          name: 'KJFK',
+          icaoCode: 'KJFK',
+          coordinates: { latitude: 35, longitude: -60 },
+        },
+        destination: {
+          name: 'IDEK',
+          icaoCode: 'IDEK',
+          coordinates: { latitude: 55, longitude: -80 },
+        },
+        checkPoints: [35, -60, 45, 75, 55, -80],
+      },
+      {
+        name: 'TST3',
+        icaoCode: 'TST3',
+        coordinates: { latitude: 45, longitude: -50 },
+      }
+    );
 
     let firstFlight = this.simulationRenderer.createFlight({
       flightId: 'TS1234',
@@ -150,55 +152,48 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       source: {
         name: 'TST1',
         icaoCode: 'TST1',
-        coordinates: {latitude: 35, longitude: -60,},
+        coordinates: { latitude: 35, longitude: -60 },
       },
       destination: {
         name: 'TST2',
         icaoCode: 'TST2',
-        coordinates: {latitude: 55, longitude: -80,},
+        coordinates: { latitude: 55, longitude: -80 },
       },
-      checkPoints: [
-        {latitude: 35, longitude: -60},
-        {latitude: 45, longitude: -70},
-        {latitude: 55, longitude: -80},
-      ],
+      checkPoints: [35, -60, 45, -70, 55, -80],
     });
 
-    this.simulationRenderer.drawTrackedPath({
-      flightId: 'TS1234',
-      location: {
-        latitude: 45,
-        longitude: -70,
-        altitude: 300,
+    this.simulationRenderer.drawTrackedPath(
+      {
+        flightId: 'TS1234',
+        location: {
+          latitude: 45,
+          longitude: -70,
+          altitude: 300,
+        },
+        groundSpeed: 500,
+        heading: 135,
+        source: {
+          name: 'TST1',
+          icaoCode: 'TST1',
+          coordinates: { latitude: 35, longitude: -60 },
+        },
+        destination: {
+          name: 'TST2',
+          icaoCode: 'TST2',
+          coordinates: { latitude: 55, longitude: -80 },
+        },
+        checkPoints: [45, -60, 40, -65, 45, -70, 50, -75, 55, -80],
       },
-      groundSpeed: 500,
-      heading: 135,
-      source: {
-        name: 'TST1',
-        icaoCode: 'TST1',
-        coordinates: {latitude: 35, longitude: -60,},
-      },
-      destination: {
-        name: 'TST2',
-        icaoCode: 'TST2',
-        coordinates: {latitude: 55, longitude: -80,},
-      },
-      checkPoints: [
-        {latitude: 35, longitude: -60},
-        {latitude: 40, longitude: -65},
-        {latitude: 45, longitude: -70},
-        {latitude: 50, longitude: -75},
-        {latitude: 55, longitude: -80},
-      ],
-    }, [
-      {latitude: 43, longitude: -70},
-      {latitude: 47, longitude: -70},
-    ]);
+      [
+        { latitude: 43, longitude: -70 },
+        { latitude: 47, longitude: -70 },
+      ]
+    );
 
     this.simulationRenderer.createAirport({
       name: 'KJFK',
       icaoCode: 'KJFK',
-      coordinates: {latitude: 40.641766, longitude: -73.780968,},
+      coordinates: { latitude: 40.641766, longitude: -73.780968 },
     });
 
     //this.simulationRenderer.focus(stuff);
