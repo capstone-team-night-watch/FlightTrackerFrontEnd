@@ -4,7 +4,7 @@ describe('Url', () => {
   it('should append the provided path to the producer base URL', () => {
     const path = '/producer';
 
-    const expected = '/producer';
+    const expected = 'http://localhost:4000/producer';
 
     expect(Url.socket(path)).toEqual(expected);
   });
