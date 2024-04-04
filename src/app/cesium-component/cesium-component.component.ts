@@ -1,5 +1,4 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { SimulationRenderer } from 'src/lib/SimulationRenderer';
 import {
   Math,
   Cartesian3,
@@ -21,22 +20,22 @@ import {
   LabelGraphics,
   VerticalOrigin,
   HorizontalOrigin,
-  Cartesian2
+  Cartesian2,
 } from 'cesium';
-import { NoFlyZone } from 'src/lib/simulation-entities/no-fly-zone';
+import { NoFlyZoneEntity } from 'src/lib/simulation-entities/no-fly-zone';
 import { CircularNoFlyZone, NoFlyZoneInfo, PolygonNoFlyZone } from 'src/lib/socket-events/no-fly-zone-tracking';
 import { ThemeService } from '../shared/theme.service';
 import { Airport, FlightInformation } from 'src/lib/socket-events/flight-tracking';
 import { DeepReadonly } from 'src/lib/utils/types';
 import { GeographicCoordinates2D } from 'src/lib/simulation-entities/coordinattes';
+import { parseLatLong } from 'src/lib/utils/Coordinates';
 
 @Component({
   selector: 'app-cesium-component',
   templateUrl: './cesium-component.component.html',
   styleUrls: ['./cesium-component.component.css'],
 })
-
-export class CesiumComponentComponent implements OnInit, AfterViewInit, SimulationRenderer {
+export class CesiumComponentComponent implements OnInit, AfterViewInit {
   private viewer: Viewer;
   @ViewChild('cesiumContainer') cesiumContainer: ElementRef;
 
@@ -59,7 +58,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
     this.viewer.flyTo(entity, { offset });
   }
 
-  RemoveNoFlyZone(zone: NoFlyZone): void {
+  RemoveNoFlyZone(zone: NoFlyZoneEntity): void {
     throw new Error('Method not implemented.');
   }
 
@@ -117,7 +116,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
     const planeEntity = this.viewer.entities.add(airplane);
 
     if (flight.checkPoints !== undefined) {
-      const path = this.drawPath(flight.checkPoints, flight.flightId);
+      const path = this.drawPath(parseLatLong(flight.checkPoints), flight.flightId);
       path.parent = planeEntity;
     }
 
@@ -134,7 +133,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
       scale: 0.4,
       verticalOrigin: VerticalOrigin.TOP,
       horizontalOrigin: HorizontalOrigin.RIGHT,
-      pixelOffset: Cartesian2.fromElements(-15,-10),
+      pixelOffset: Cartesian2.fromElements(-15, -10),
     });
 
     let descriptionProperty = new ConstantProperty();
@@ -224,7 +223,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
     return newZone;
   }
 
-  public createAirport(airportIn : Airport): Entity {
+  public createAirport(airportIn: Airport): Entity {
     let newAirport = this.viewer.entities.add({
       parent: undefined,
       name: airportIn.name,
@@ -283,8 +282,8 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
     <b>This is the predicted flight path of ${name}</b><br>
     origin latitude: ${checkpoints[0].latitude}<br>
     origin longitude: ${checkpoints[0].longitude}<br>
-    destination latitude: ${checkpoints[checkpoints.length-1].latitude}<br>
-    destination longitude: ${checkpoints[checkpoints.length-1].longitude}
+    destination latitude: ${checkpoints[checkpoints.length - 1].latitude}<br>
+    destination longitude: ${checkpoints[checkpoints.length - 1].longitude}
     `);
     newLine.description = descriptionProperty;
 
@@ -297,7 +296,11 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
 
   public drawAlternatePath(flight: FlightInformation, targetAirport: Airport): Entity {
     let planeCoords = Cartesian3.fromDegrees(flight.location.longitude, flight.location.latitude, 0);
-    let airportCoords = Cartesian3.fromDegrees(targetAirport.coordinates.longitude, targetAirport.coordinates.latitude, 0);
+    let airportCoords = Cartesian3.fromDegrees(
+      targetAirport.coordinates.longitude,
+      targetAirport.coordinates.latitude,
+      0
+    );
 
     let newAlt = this.viewer.entities.add({
       name: flight.flightId + ' alternate flight path',
@@ -335,44 +338,48 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
     return numIn;
   }
 
-  public drawTrackedPath(flight: FlightInformation, trackedCoords: GeographicCoordinates2D[]){
+  public drawTrackedPath(flight: FlightInformation, trackedCoords: GeographicCoordinates2D[]) {
     let startCutIndex;
     let startCutManhattanDistance;
     let endCutIndex;
     let endCutManhattanDistance;
 
-    for (let i = 0; i < flight.checkPoints.length; i++) {
-      let newStartManhattan = (this.mathAbs(trackedCoords[0].latitude - flight.checkPoints[i].latitude) +
-        this.mathAbs(trackedCoords[0].longitude - flight.checkPoints[i].longitude));
+    let checkPoints = parseLatLong(flight.checkPoints);
 
-      let newEndManhattan = (this.mathAbs(trackedCoords[trackedCoords.length-1].latitude - flight.checkPoints[i].latitude) +
-        this.mathAbs(trackedCoords[trackedCoords.length-1].longitude - flight.checkPoints[i].longitude));
+    for (let i = 0; i < checkPoints.length; i++) {
+      let newStartManhattan =
+        this.mathAbs(trackedCoords[0].latitude - checkPoints[i].latitude) +
+        this.mathAbs(trackedCoords[0].longitude - checkPoints[i].longitude);
 
-      console.log("Start Manhattan: " + newStartManhattan + " | End Manhattan: " + newEndManhattan);
+      let newEndManhattan =
+        this.mathAbs(trackedCoords[trackedCoords.length - 1].latitude - checkPoints[i].latitude) +
+        this.mathAbs(trackedCoords[trackedCoords.length - 1].longitude - checkPoints[i].longitude);
 
-      if (startCutManhattanDistance == undefined ||
-        newStartManhattan < startCutManhattanDistance) {
+      console.log('Start Manhattan: ' + newStartManhattan + ' | End Manhattan: ' + newEndManhattan);
+
+      if (startCutManhattanDistance == undefined || newStartManhattan < startCutManhattanDistance) {
         startCutManhattanDistance = newStartManhattan;
         startCutIndex = i;
       }
 
-      if (endCutManhattanDistance == undefined ||
-        newEndManhattan < endCutManhattanDistance) {
+      if (endCutManhattanDistance == undefined || newEndManhattan < endCutManhattanDistance) {
         endCutManhattanDistance = newEndManhattan;
         endCutIndex = Math.clamp(i + 1, 0, flight.checkPoints.length - 1);
       }
     }
 
-    let startSlice = flight.checkPoints.slice(0,startCutIndex);
-    let endSlice = flight.checkPoints.slice(endCutIndex);
+    let startSlice = checkPoints.slice(0, startCutIndex);
+    let endSlice = checkPoints.slice(endCutIndex);
     let concatArray = startSlice.concat(trackedCoords, endSlice);
-    let finalArray = concatArray.map((coordinate) => Cartesian3.fromDegrees(coordinate.longitude, coordinate.latitude, 0));
+    let finalArray = concatArray.map((coordinate) =>
+      Cartesian3.fromDegrees(coordinate.longitude, coordinate.latitude, 0)
+    );
 
     const times = finalArray.map((_, index) => index / (finalArray.length - 1));
 
     const spline = new CatmullRomSpline({
       times: times,
-      points: finalArray
+      points: finalArray,
     });
 
     const points = [];
@@ -396,12 +403,14 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit, Simulati
     descriptionProperty.setValue(`
     <b>This is the partially-tracked flight path of ${flight.flightId}</b><br>
     first tracked coordinates: ${trackedCoords[0].latitude}, ${trackedCoords[0].longitude}<br>
-    latest tracked coordinates: ${trackedCoords[trackedCoords.length-1].latitude}, ${trackedCoords[trackedCoords.length-1].longitude}
+    latest tracked coordinates: ${trackedCoords[trackedCoords.length - 1].latitude}, ${
+      trackedCoords[trackedCoords.length - 1].longitude
+    }
     `);
     newTrackedLine.description = descriptionProperty;
 
     for (let i = 0; i < finalArray.length; i++) {
-      console.log("Coordinate Set " + i + ": " + finalArray[i].x + ", " + finalArray[i].y);
+      console.log('Coordinate Set ' + i + ': ' + finalArray[i].x + ', ' + finalArray[i].y);
     }
 
     return newTrackedLine;

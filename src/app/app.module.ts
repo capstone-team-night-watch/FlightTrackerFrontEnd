@@ -30,6 +30,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     FlightTrackerDashboardComponent,
   ],
   imports: [
+    HttpClientModule,
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -53,7 +54,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     MatInputModule,
     FormsModule,
     MatTabsModule,
-    HttpClientModule,
     MatButtonModule,
     MatDialogModule,
     MatInputModule,

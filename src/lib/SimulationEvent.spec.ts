@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { SimulationEvent } from './SimulationEvent';
-import { ClientToServerEvents } from './socket-events/socket-events-type';
+import { Ack, ClientToServerEvents } from './socket-events/socket-events-type';
 import { JoinRoomPayload, LeaveRoomPayload } from './socket-events/room-management';
-import { Ack } from './socket-events/socker-ack';
+
 
 describe('SimulationEvent', () => {
   let simulationEvent: SimulationEvent<any>;
