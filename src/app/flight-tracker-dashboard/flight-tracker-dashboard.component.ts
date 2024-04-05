@@ -57,7 +57,6 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
     });
 
     setTimeout(() => {
-      console.log('things');
       this.simulationController.initialize();
     }, 2000);
   }
@@ -69,7 +68,7 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       createdAt: 'Now brother',
       notamNumber: ' NO Fly zone number',
       type: 'CIRCLE',
-      radius: 2000,
+      radius: 300_000,
       center: {
         latitude: 41.25716,
         longitude: -95.995102,
@@ -97,15 +96,6 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
         },
       ],
     });
-
-    let check = this.simulationRenderer.drawPath(
-      [
-        { latitude: 35, longitude: -60 },
-        { latitude: 45, longitude: -70 },
-        { latitude: 55, longitude: -80 },
-      ],
-      'TS1234'
-    );
 
     this.simulationRenderer.drawAlternatePath(
       {
