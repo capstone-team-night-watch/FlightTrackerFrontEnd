@@ -11,6 +11,7 @@ import { UIError } from './error';
 import { CesiumComponentComponent } from 'src/app/cesium-component/cesium-component.component';
 import { ClientToServerEvents, ServerToClientEvents } from './socket-events/socket-events-type';
 import { PersistenceService } from 'src/app/shared/persistence.service';
+import { Observable } from 'rxjs';
 
 export class SimulationController {
   public events = {
@@ -49,6 +50,7 @@ export class SimulationController {
     this.events.flightListUpdated.trigger(this.planes);
     this.events.noFlyZoneListUpdated.trigger(this.noFlyZones);
 
+
     this.handleFlightEvents();
     this.handleNoFlyZoneEvents();
 
@@ -71,16 +73,19 @@ export class SimulationController {
     // Handle the update of the location or expected path of a flight
     this.socket.on('flight-location-updated', (data) => {
       var getPlane = this.getPlane(data.flightId);
+
+      getPlane.flightInformation.heading = data.heading;
       getPlane.flightInformation.location = data.newLocation;
+      getPlane.flightInformation.groundSpeed = data.groundSpeed;
 
       this.renderer.updateFlightLocation(getPlane.cesiumEntity, getPlane.flightInformation);
     });
 
     this.socket.on('flight-path-updated', (data) => {
       var getPlane = this.getPlane(data.flightId);
-      getPlane.flightInformation.checkPoints = data.newPath;
+      getPlane.flightInformation.checkPoints = data.newCheckPoints;
 
-      this.renderer.updateFlightLocation(getPlane.cesiumEntity, getPlane.flightInformation);
+      this.renderer.updateFlightPath(getPlane.cesiumEntity, getPlane.flightInformation);
     });
 
     this.socket.on('flight-path-intersect-with-no-fly-zone', (data) => {

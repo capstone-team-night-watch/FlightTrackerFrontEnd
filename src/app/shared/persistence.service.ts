@@ -4,6 +4,7 @@ import { lastValueFrom } from 'rxjs';
 import { UIError } from 'src/lib/error';
 import { FlightInformation } from 'src/lib/socket-events/flight-tracking';
 import { NoFlyZoneInfo } from 'src/lib/socket-events/no-fly-zone-tracking';
+import { ApiResponse } from 'src/lib/utils/types';
 import { Url } from 'src/lib/utils/url';
 
 @Injectable({
@@ -21,7 +22,10 @@ export class PersistenceService {
    */
   public async getAllNoFlyZone(): Promise<NoFlyZoneInfo[]> {
     try {
-      return await lastValueFrom(this.httpClient.get<NoFlyZoneInfo[]>(Url.consumer()));
+      const response = await lastValueFrom(
+        this.httpClient.get<ApiResponse<NoFlyZoneInfo[]>>(Url.consumer('/NoFlyZone'))
+      );
+      return response.data;
     } catch (error) {
       throw new UIError('Failed to get no fly zones');
     }
@@ -32,7 +36,11 @@ export class PersistenceService {
    */
   public async getAllActiveFlight(): Promise<FlightInformation[]> {
     try {
-      return await lastValueFrom(this.httpClient.get<FlightInformation[]>(Url.consumer()));
+      const response = await lastValueFrom(
+        this.httpClient.get<ApiResponse<FlightInformation[]>>(Url.consumer('/Flight'))
+      );
+
+      return response.data;
     } catch (error) {
       throw new UIError('Failed to get the list of actively tracked flight');
     }

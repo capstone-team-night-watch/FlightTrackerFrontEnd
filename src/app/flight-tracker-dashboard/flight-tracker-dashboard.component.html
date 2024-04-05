@@ -28,7 +28,7 @@
           <ul>
             <div>Flights</div>
             <button
-              (click)="simulationRenderer.focus(item.cesiumEntity)"
+              (click)="simulationRenderer.focus(item.cesiumEntity.plane)"
               *ngFor="let item of flights"
             >
               {{ item.flightInformation.flightId }}

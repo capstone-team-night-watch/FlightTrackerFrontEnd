@@ -21,6 +21,7 @@ import {
   VerticalOrigin,
   HorizontalOrigin,
   Cartesian2,
+  EntityCollection,
 } from 'cesium';
 import { NoFlyZoneEntity } from 'src/lib/simulation-entities/no-fly-zone';
 import { CircularNoFlyZone, NoFlyZoneInfo, PolygonNoFlyZone } from 'src/lib/socket-events/no-fly-zone-tracking';
@@ -29,6 +30,7 @@ import { Airport, FlightInformation } from 'src/lib/socket-events/flight-trackin
 import { DeepReadonly } from 'src/lib/utils/types';
 import { GeographicCoordinates2D } from 'src/lib/simulation-entities/coordinattes';
 import { parseLatLong } from 'src/lib/utils/Coordinates';
+import { RenderedFlight } from 'src/lib/simulation-entities/plane';
 
 @Component({
   selector: 'app-cesium-component',
@@ -41,13 +43,24 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
 
   constructor(private theme: ThemeService) {}
 
-  updateFlightLocation(entity: Entity, flight: FlightInformation): void {
+  async updateFlightLocation(flightObject: RenderedFlight, flight: FlightInformation): Promise<void> {
     // TODO: Update this so that it updates the flight location instead of deleting and recreating it
-    this.viewer.entities.remove(entity);
+    this.viewer.entities.remove(flightObject.plane);
 
-    const newFlight = this.createFlight(flight);
+    const newFlight = await this.drawPlane(flight);
 
-    Object.assign(entity, newFlight);
+    flightObject.plane = newFlight;
+  }
+
+  async updateFlightPath(flightObject: RenderedFlight, flight: FlightInformation): Promise<void> {
+    // TODO: Update this so that it updates the flight location instead of deleting and recreating it
+    this.viewer.entities.remove(flightObject.planePath);
+
+    const newPath = this.drawPath(parseLatLong(flight.checkPoints), flight.flightId);
+
+    newPath.parent = flightObject.plane;
+
+    flightObject.planePath = newPath;
   }
 
   focus(redonlyEntity: DeepReadonly<Entity>): void {
@@ -77,20 +90,25 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {}
 
-  initialize() {}
-
   RemovePlane(plane: Plane): void {
     throw new Error('Method not implemented.');
   }
 
-  public async createFlight(flight: FlightInformation): Promise<Entity> {
+  public async createFlight(flight: FlightInformation): Promise<RenderedFlight> {
+    var newFlight = await this.drawPlane(flight);
+    var path = this.drawPath(parseLatLong(flight.checkPoints), flight.flightId);
+
+    path.parent = newFlight;
+
+    return { plane: newFlight, planePath: path };
+  }
+
+  public async drawPlane(flight: FlightInformation): Promise<Entity> {
     let newPosition = Cartesian3.fromDegrees(
       flight.location.longitude,
       flight.location.latitude,
       flight.location.altitude
     );
-
-    console.log(JSON.stringify(flight.location));
 
     const pUri = await IonResource.fromAssetId(1662340);
 
@@ -114,11 +132,6 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     } satisfies Entity.ConstructorOptions;
 
     const planeEntity = this.viewer.entities.add(airplane);
-
-    if (flight.checkPoints !== undefined) {
-      const path = this.drawPath(parseLatLong(flight.checkPoints), flight.flightId);
-      path.parent = planeEntity;
-    }
 
     this.viewer.camera.flyTo({
       destination: Cartesian3.fromDegrees(
@@ -166,8 +179,8 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
       position: Cartesian3.fromDegrees(noFlyZone.center.longitude, noFlyZone.center.latitude, noFlyZone.altitude),
 
       ellipse: {
-        semiMinorAxis: 300000.0,
-        semiMajorAxis: 300000.0,
+        semiMinorAxis: noFlyZone.radius,
+        semiMajorAxis: noFlyZone.radius,
         material: Color.fromCssColorString(this.theme.noFlyZoneColor),
 
         extrudedHeight: 0.0,
@@ -193,8 +206,6 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     const coordinates = noFlyZone.vertices.map((vertice) => {
       return Cartesian3.fromDegrees(vertice.longitude, vertice.latitude, 0);
     });
-
-    console.log(coordinates);
 
     let newZone = this.viewer.entities.add({
       parent: undefined,

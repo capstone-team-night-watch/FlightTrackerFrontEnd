@@ -43,13 +43,15 @@ export type NoFylZoneDeletedMessage = SocketMessage & {
 };
 
 export type FlightLocationUpdatedMessage = SocketMessage & {
+  heading: number;
   flightId: string;
+  groundSpeed: number;
   newLocation: GeographicCoordinates3D;
 };
 
 export type FlightPathUpdateMessage = SocketMessage & {
   flightId: string;
-  newPath: number[];
+  newCheckPoints: number[];
 };
 
 export type FlightIntersectWithNoFlyZoneMessage = SocketMessage & {
