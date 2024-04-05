@@ -32,8 +32,6 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
   constructor(private _snackBar: MatSnackBar, private persistenceService: PersistenceService) {}
 
   ngAfterViewInit() {
-    this.simulationRenderer.initialize();
-
     this.simulationController = new SimulationController(this.simulationRenderer, this.persistenceService);
 
     this.flights$ = this.simulationController.events.flightListUpdated.intoObservable();
@@ -54,7 +52,7 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
 
     this.simulationController.events.message.addHandler((message) => {
       this._snackBar.open(message.message, '', {
-        duration: 7000,
+        duration: 10_000_000,
       });
     });
 
@@ -62,8 +60,6 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       console.log('things');
       this.simulationController.initialize();
     }, 2000);
-
-    this.addTestData();
   }
 
   public addTestData(): void {
