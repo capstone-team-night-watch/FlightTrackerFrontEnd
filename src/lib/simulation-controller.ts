@@ -24,7 +24,7 @@ export class SimulationController {
   private plane: Plane[] = [];
   private noFlyZones: NoFlyZone[] = [];
 
-  private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
+  public socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
   constructor(renderer: SimulationRenderer) {
     this.renderer = renderer;
@@ -123,5 +123,9 @@ export class SimulationController {
         }
       }
     );
+  }
+
+  public getPlanes() {
+    return this.plane;
   }
 }
