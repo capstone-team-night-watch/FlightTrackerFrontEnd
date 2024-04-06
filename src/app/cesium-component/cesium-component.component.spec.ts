@@ -106,7 +106,16 @@ describe('CesiumComponentComponent', () => {
           longitude: 150,
         },
       },
-      checkPoints: [],
+      checkPoints: [
+        {
+          latitude: 100,
+          longitude: 200,
+        },
+        {
+          latitude: 10000,
+          longitude: 20000,
+        },
+      ],
     };
 
     let planeEntity = component.createFlight(flight);
