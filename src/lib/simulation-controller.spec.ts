@@ -1,6 +1,6 @@
-import { SimulationController } from './simulation-controller';
 import { SimulationRenderer } from './SimulationRenderer';
-import { FlightLocationUpdatedMessage } from './socket-events/flight-tracking';
+import { SimulationController } from './simulation-controller';
+import { FlightInformation, FlightLocationUpdatedMessage } from './socket-events/flight-tracking';
 
 describe('SimulationController', () => {
   let simulationController: SimulationController;
@@ -81,46 +81,44 @@ describe('SimulationController', () => {
     const flightLocationUpdatedCallback: (data: FlightLocationUpdatedMessage) => void =
       mockSocket.on.calls.argsFor(0)[1];
 
-    const flightToUpate = {
-      flightInformation: {
-        flightId: 'ABC123',
-        location: {
-          latitude: 999,
-          longitude: 999,
-          altitude: 999,
-        },
-        groundSpeed: 40,
-        heading: 50,
-        source: {
-          name: 'SourceName',
-          icaoCode: 'IcaoCode',
-          coordinates: {
-            latitude: 60,
-            longitude: 70,
-          },
-        },
-        destination: {
-          name: 'DestinationName',
-          icaoCode: 'IcaoCode',
-          coordinates: {
-            latitude: 80,
-            longitude: 90,
-          },
-        },
-        checkPoints: [
-          {
-            latitude: 100,
-            longitude: 200,
-          },
-          {
-            latitude: 10000,
-            longitude: 20000,
-          },
-        ],
+    const flightToUpate: FlightInformation = {
+      flightId: 'ABC123',
+      location: {
+        latitude: 999,
+        longitude: 999,
+        altitude: 999,
       },
+      groundSpeed: 40,
+      heading: 50,
+      source: {
+        name: 'SourceName',
+        icaoCode: 'IcaoCode',
+        coordinates: {
+          latitude: 60,
+          longitude: 70,
+        },
+      },
+      destination: {
+        name: 'DestinationName',
+        icaoCode: 'IcaoCode',
+        coordinates: {
+          latitude: 80,
+          longitude: 90,
+        },
+      },
+      checkPoints: [
+        {
+          latitude: 100,
+          longitude: 200,
+        },
+        {
+          latitude: 10000,
+          longitude: 20000,
+        },
+      ],
     };
 
-    flightLocationUpdatedCallback(flightToUpate);
+    flightLocationUpdatedCallback({ flightInformation: flightToUpate });
 
     // wait so that everything in socket-end point finshes
     await new Promise((resolve) => setTimeout(resolve, 1000));
