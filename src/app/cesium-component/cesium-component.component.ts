@@ -146,7 +146,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
       scale: 0.4,
       verticalOrigin: VerticalOrigin.TOP,
       horizontalOrigin: HorizontalOrigin.RIGHT,
-      pixelOffset: Cartesian2.fromElements(-15, -10),
+      pixelOffset: Cartesian2.fromElements(20, -57),
     });
 
     let descriptionProperty = new ConstantProperty();
@@ -161,7 +161,39 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     `);
     planeEntity.description = descriptionProperty;
 
+    //if () {
+    //  this.attachEarlyWarning(planeEntity);
+    //} else if() {
+    //  this.attachWarning(planeEntity);
+    //} else{
+      this.eraseWarnings(planeEntity);
+    //}
+
     return planeEntity;
+  }
+
+  public attachEarlyWarning(entity: Entity) {
+    entity.billboard = new BillboardGraphics({
+      image: 'assets/images/EarlyWarningLabel.png',
+      verticalOrigin: VerticalOrigin.BOTTOM,
+      pixelOffset: Cartesian2.fromElements(0, 35),
+      width: 57,
+      height: 15,
+    });
+  }
+
+  public attachWarning(entity: Entity) {
+    entity.billboard = new BillboardGraphics({
+      image: 'assets/images/WarningLabel.png',
+      verticalOrigin: VerticalOrigin.BOTTOM,
+      pixelOffset: Cartesian2.fromElements(0, 35),
+      width: 57,
+      height: 15,
+    });
+  }
+
+  public eraseWarnings(entity: Entity) {
+    entity.billboard = undefined;
   }
 
   public CreateNoFlyZone(noFlyZone: NoFlyZoneInfo): Entity {
