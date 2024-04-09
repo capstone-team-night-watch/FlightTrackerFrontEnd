@@ -106,7 +106,7 @@ describe('CesiumComponentComponent', () => {
           longitude: 150,
         },
       },
-      checkPoints: [],
+      checkPoints: [0, 1, 2, 3, 4],
     };
 
     let planeEntity = component.createFlight(flight);
