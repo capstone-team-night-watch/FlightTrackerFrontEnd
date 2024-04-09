@@ -27,7 +27,7 @@ export class SimulationController {
   private planes: Plane[] = [];
   private noFlyZones: NoFlyZoneEntity[] = [];
 
-  private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
+  public socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
   constructor(renderer: CesiumComponentComponent, persistenceService: PersistenceService) {
     this.renderer = renderer;
@@ -49,7 +49,6 @@ export class SimulationController {
 
     this.events.flightListUpdated.trigger(this.planes);
     this.events.noFlyZoneListUpdated.trigger(this.noFlyZones);
-
 
     this.handleFlightEvents();
     this.handleNoFlyZoneEvents();
@@ -181,4 +180,8 @@ export class SimulationController {
       }
     );
   }
+
+  public getPlanes = () => {
+    return this.planes;
+  };
 }

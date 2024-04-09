@@ -3,18 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CesiumComponentComponent } from './cesium-component.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AppModule } from '../app.module';
-import {
-  JulianDate,
-  Entity,
-  Matrix4,
-  EntityCollection,
-  Event,
-  ModelGraphics,
-  Property,
-  PositionProperty,
-  SampledPositionProperty,
-  ConstantProperty,
-} from 'cesium';
 import { FlightInformation } from 'src/lib/socket-events/flight-tracking';
 import { GeographicCoordinates2D } from 'src/lib/simulation-entities/coordinattes';
 
@@ -106,7 +94,7 @@ describe('CesiumComponentComponent', () => {
           longitude: 150,
         },
       },
-      checkPoints: [],
+      checkPoints: [20, 20, 20],
     };
 
     let planeEntity = component.createFlight(flight);
@@ -114,17 +102,17 @@ describe('CesiumComponentComponent', () => {
     expect(planeEntity).toBeTruthy();
   });
 
-  it('should draw path and return entity', () => {
+  it('should draw path and return entity', async () => {
     let coordinates: GeographicCoordinates2D[] = [];
 
     coordinates.push({
-      latitude: 10,
-      longitude: 30,
+      latitude: 0,
+      longitude: 0,
     });
 
     coordinates.push({
-      latitude: 3000,
-      longitude: 5000,
+      latitude: 0,
+      longitude: 0,
     });
 
     component.drawPath(coordinates, 'name');
