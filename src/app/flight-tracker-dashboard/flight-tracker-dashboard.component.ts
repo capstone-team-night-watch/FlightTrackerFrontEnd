@@ -43,7 +43,6 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       this.noFlyZones$.pipe(startWith([])),
     ]).subscribe((values) => {
       const [flights, filter, noFlyZones] = values;
-      console.log('Trigered ', flights, noFlyZones);
 
       this.flights = flights.filter((f) => f.flightInformation.flightId.includes(filter ?? ''));
 
@@ -52,7 +51,7 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
 
     this.simulationController.events.message.addHandler((message) => {
       this._snackBar.open(message.message, '', {
-        duration: 10_000_000,
+        duration: 1000_000,
       });
     });
 

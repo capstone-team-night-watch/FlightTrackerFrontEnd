@@ -39,6 +39,8 @@ export class SimulationController {
     const allNoFlyZones = await this.persistenceService.getAllNoFlyZone();
     const allActiveFlight = await this.persistenceService.getAllActiveFlight();
 
+    console.log(allActiveFlight);
+
     for (let noFlyZone of allNoFlyZones) {
       this.createNoFlyZone(noFlyZone);
     }

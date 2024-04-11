@@ -47,7 +47,7 @@ jobs:
           echo "Extracted Build Number: ${BUILD_NUMBER}"
 
       - name: Build angular project
-        run: npm run build -- --configuration=production
+        run: npm run build:prod
 
       - name: Build Docker Image
         run: |
