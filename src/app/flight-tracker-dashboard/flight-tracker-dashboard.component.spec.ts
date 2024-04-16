@@ -19,6 +19,7 @@ describe('FlightTrackerDashboardComponent', () => {
   });
 
   it('should create', () => {
+    component.addTestData();
     expect(component).toBeTruthy();
   });
 });

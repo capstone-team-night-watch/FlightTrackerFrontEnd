@@ -10,6 +10,6 @@ export namespace Url {
       return environment.socketUrl;
     }
 
-    return environment.socketUrl + path ?? '';
+    return environment.socketUrl + path;
   }
 }

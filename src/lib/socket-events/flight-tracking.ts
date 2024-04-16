@@ -1,4 +1,4 @@
-import { GeographicCoordinates2D, GeographicCoordinates3D } from "../simulation-entities/coordinattes";
+import { GeographicCoordinates2D, GeographicCoordinates3D } from '../simulation-entities/coordinattes';
 
 export type FlightInformation = {
   /**
@@ -35,15 +35,11 @@ export type FlightInformation = {
   /**
    * List of points that the place will go through during the trip
    */
-  checkPoints: GeographicCoordinates2D[];
+  checkPoints: number[];
 };
 
 export type Airport = {
   name: string;
   icaoCode: string;
   coordinates: GeographicCoordinates2D;
-};
-
-export type FlightLocationUpdatedMessage = {
-  flightInformation: FlightInformation;
 };

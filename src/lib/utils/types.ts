@@ -9,3 +9,9 @@ interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}
 type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
+
+export type ApiResponse<T> = {
+    data: T,
+    success: boolean,
+    message: string
+}
