@@ -22,6 +22,7 @@ import {
   HorizontalOrigin,
   Cartesian2,
   EntityCollection,
+  PositionProperty,
 } from 'cesium';
 import { NoFlyZoneEntity } from 'src/lib/simulation-entities/no-fly-zone';
 import { CircularNoFlyZone, NoFlyZoneInfo, PolygonNoFlyZone } from 'src/lib/socket-events/no-fly-zone-tracking';
@@ -31,6 +32,7 @@ import { DeepReadonly } from 'src/lib/utils/types';
 import { GeographicCoordinates2D } from 'src/lib/simulation-entities/coordinattes';
 import { parseLatLong } from 'src/lib/utils/Coordinates';
 import { RenderedFlight } from 'src/lib/simulation-entities/plane';
+import { DynamicPlanePosition } from 'src/lib/simulation-entities/PlanePosition';
 
 @Component({
   selector: 'app-cesium-component',
@@ -45,11 +47,11 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
 
   async updateFlightLocation(flightObject: RenderedFlight, flight: FlightInformation): Promise<void> {
     // TODO: Update this so that it updates the flight location instead of deleting and recreating it
-    this.viewer.entities.remove(flightObject.plane);
+    const entity = flightObject.plane;
 
-    const newFlight = await this.drawPlane(flight);
+    const position = entity.position as DynamicPlanePosition;
 
-    flightObject.plane = newFlight;
+    position.setCoordinates(flight.location);
   }
 
   async updateFlightPath(flightObject: RenderedFlight, flight: FlightInformation): Promise<void> {
@@ -77,7 +79,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     Ion.defaultAccessToken =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjNzIyMjA2MC02ZDY2LTQ1YmUtYjc0Yi05MzFhY2ViZWNkMWUiLCJpZCI6MTIzOTU4LCJpYXQiOjE2NzU4OTY5MzV9.iWKvQ4p-2joQPJ4o3vMeT3HDeBkyKb5ijeA87NEppa4';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMmE5MDI5OS03NDMxLTQxZGQtODhiNi0xODEwZTNkMmNjZjciLCJpZCI6MjA5MjA4LCJpYXQiOjE3MTMzMTIwOTV9.GJMyvAoAoFB3bzZpqQqGFVlhqI5BV1JqoJcJM_0R3h8';
 
     // Put initialization code for the Cesium viewer here
     this.viewer = new Viewer(this.cesiumContainer.nativeElement, {
@@ -96,6 +98,16 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
 
   public async createFlight(flight: FlightInformation): Promise<RenderedFlight> {
     var newFlight = await this.drawPlane(flight);
+
+    if (!flight.checkPoints.length) {
+      flight.checkPoints = [
+        flight.source.coordinates.latitude,
+        flight.source.coordinates.longitude,
+        flight.destination.coordinates.latitude,
+        flight.destination.coordinates.longitude,
+      ];
+    }
+
     var path = this.drawPath(parseLatLong(flight.checkPoints), flight.flightId);
 
     path.parent = newFlight;
@@ -104,20 +116,16 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
   }
 
   public async drawPlane(flight: FlightInformation): Promise<Entity> {
-    let newPosition = Cartesian3.fromDegrees(
-      flight.location.longitude,
-      flight.location.latitude,
-      flight.location.altitude
-    );
+    let newPosition = new DynamicPlanePosition(flight.location);
 
-    const pUri = await IonResource.fromAssetId(1662340);
+    const pUri = await IonResource.fromAssetId(2541282);
 
     const pitch = 0;
     const roll = 0;
 
     const heading = Math.toRadians(flight.heading);
     const hpr = new HeadingPitchRoll(heading, pitch, roll);
-    const orientation = Transforms.headingPitchRollQuaternion(newPosition, hpr);
+    const orientation = Transforms.headingPitchRollQuaternion(newPosition.getCoordinates(), hpr);
 
     let airplane = {
       id: flight.flightId,
@@ -133,14 +141,6 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
 
     const planeEntity = this.viewer.entities.add(airplane);
 
-    this.viewer.camera.flyTo({
-      destination: Cartesian3.fromDegrees(
-        flight.location.longitude,
-        flight.location.latitude,
-        flight.location.altitude + 1_000_000
-      ),
-    });
-
     planeEntity.label = new LabelGraphics({
       text: flight.flightId,
       scale: 0.4,
@@ -152,7 +152,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     let descriptionProperty = new ConstantProperty();
     descriptionProperty.setValue(`
     <b>This is flight ${flight.flightId}</b><br>
-    Heading from ${flight.source.name} to ${flight.destination.name}<br>
+    Heading from ${flight.source?.name} to ${flight.destination?.name}<br>
     latitude: ${flight.location.latitude}<br>
     longitude: ${flight.location.longitude}<br>
     altitude: ${flight.location.altitude * 100}<br>
@@ -161,13 +161,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     `);
     planeEntity.description = descriptionProperty;
 
-    //if () {
-    //  this.attachEarlyWarning(planeEntity);
-    //} else if() {
-    //  this.attachWarning(planeEntity);
-    //} else{
-      this.eraseWarnings(planeEntity);
-    //}
+    this.eraseWarnings(planeEntity);
 
     return planeEntity;
   }
