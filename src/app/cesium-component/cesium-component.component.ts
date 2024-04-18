@@ -33,6 +33,7 @@ import { GeographicCoordinates2D } from 'src/lib/simulation-entities/coordinatte
 import { parseLatLong } from 'src/lib/utils/Coordinates';
 import { RenderedFlight } from 'src/lib/simulation-entities/plane';
 import { DynamicPlanePosition } from 'src/lib/simulation-entities/PlanePosition';
+import { AirportNode } from 'src/lib/simulation-entities/airport-node';
 
 @Component({
   selector: 'app-cesium-component',
@@ -43,6 +44,8 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
   private viewer: Viewer;
   @ViewChild('cesiumContainer') cesiumContainer: ElementRef;
 
+  public airports: AirportNode;
+  
   constructor(private theme: ThemeService) {}
 
   async updateFlightLocation(flightObject: RenderedFlight, flight: FlightInformation): Promise<void> {
@@ -260,7 +263,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return newZone;
   }
 
-  public createAirport(airportIn: Airport): Entity {
+  public createAirport(airportIn: Airport): AirportNode {
     let newAirport = this.viewer.entities.add({
       parent: undefined,
       name: airportIn.name,
@@ -286,9 +289,130 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     `);
     newAirport.description = descriptionProperty;
 
-    return newAirport;
+    let newAirportNode: AirportNode = {
+      airportObject: airportIn,
+      coords: Cartesian3.packArray([Cartesian3.fromDegrees(airportIn.coordinates.longitude, airportIn.coordinates.latitude, 0)]),
+      depth: 0,
+      leftNode: undefined,
+      rightNode: undefined,
+    };
+
+    if (this.airports != undefined) {
+      let depth = 0;
+      let currentNode = this.airports;
+      while (true) {
+        if (newAirportNode.coords[depth % 3] < currentNode.coords[depth % 3]) {
+          if (currentNode.leftNode == undefined) {
+            currentNode.leftNode = newAirportNode;
+            newAirportNode.depth = depth + 1;
+            break;
+          } else {
+            currentNode = currentNode.leftNode;
+            depth++;
+          }
+        } else {
+          if (currentNode.rightNode == undefined) {
+            currentNode.rightNode = newAirportNode;
+            newAirportNode.depth = depth + 1;
+            break;
+          } else {
+            currentNode = currentNode.rightNode;
+            depth ++;
+          }
+        }
+      }
+    } else {
+      this.airports = newAirportNode;
+    }
+
+    return newAirportNode;
   }
 
+  public getClosestAirport(flightInformation: FlightInformation, rootNode?: AirportNode, bestDistance?: number): Airport{
+    if (rootNode == undefined) {
+      rootNode = this.airports;
+    }
+
+    if (bestDistance == undefined) {
+      bestDistance = Cartesian3.distanceSquared(Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),
+      Cartesian3.unpack(rootNode.coords));
+    }
+
+    let bestAirport: Airport = rootNode.airportObject;
+    let currentNode: AirportNode = rootNode;
+
+    let flightCoords: number[] = Cartesian3.packArray([Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude)]);
+    let checkNodes: AirportNode[] = [];
+    let alternateNodes: AirportNode[] = [];
+
+    let candidate: AirportNode | undefined = undefined;
+    let alternate: AirportNode | undefined = undefined;
+    let currentDistance: number = 0;
+    while (true) {
+      currentDistance = Cartesian3.distanceSquared(Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),
+      Cartesian3.unpack(currentNode.coords));
+      if ( currentDistance < bestDistance) {
+        bestDistance = currentDistance;
+        bestAirport = currentNode.airportObject;
+      }
+
+      if (flightCoords[currentNode.depth % 3] < currentNode.coords[currentNode.depth % 3]) {
+        candidate = currentNode.leftNode;
+        alternate = currentNode.rightNode;
+      } else {
+        candidate = currentNode.rightNode;
+        alternate = currentNode.leftNode;
+      }
+
+      if (alternate != undefined) {
+        checkNodes.push(currentNode);
+        alternateNodes.push(alternate);
+      }
+
+      if (candidate != undefined) {
+        currentNode = candidate;
+      } else {
+        break;
+      }
+    }
+
+    let flightCoordsArray: number[] = [];
+    Cartesian3.pack(Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),flightCoordsArray);
+
+    while (alternateNodes.length > 0) {
+      let currentCheck: AirportNode = checkNodes[checkNodes.length - 1];
+      let currentAlternate: AirportNode = alternateNodes[alternateNodes.length - 1];
+
+      let nodeCoordsArray: number[] = [];
+      Cartesian3.pack(Cartesian3.fromDegrees(currentCheck.airportObject.coordinates.longitude, currentCheck.airportObject.coordinates.latitude),nodeCoordsArray);
+
+      let flightCoordsDimension: number[] = flightCoordsArray.slice();
+      let nodeCoordsDimension: number[] = nodeCoordsArray.slice();
+
+      for(let i = 0; i < 3; i++) {
+        if (i != currentCheck.depth % 3) {
+          flightCoordsDimension[i] = 0;
+          nodeCoordsDimension[i] = 0;
+        }
+      }
+
+      currentDistance = Cartesian3.distanceSquared(Cartesian3.unpack(flightCoordsDimension), Cartesian3.unpack(nodeCoordsDimension));
+      if (currentDistance <= bestDistance) {
+        let alternateBest = this.getClosestAirport(flightInformation, currentAlternate, bestDistance);
+        let alternateDistance = Cartesian3.distanceSquared(Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),
+        Cartesian3.fromDegrees(alternateBest?.coordinates.longitude, alternateBest?.coordinates.latitude))
+        if (alternateDistance < bestDistance) {
+          bestDistance = alternateDistance;
+          bestAirport = alternateBest;
+        }
+      }
+      checkNodes.pop();
+      alternateNodes.pop();
+    }
+
+    return bestAirport;
+  }
+  
   public drawPath(checkpoints: GeographicCoordinates2D[], name: string): Entity {
     const times = checkpoints.map((_, index) => index / (checkpoints.length - 1));
 
