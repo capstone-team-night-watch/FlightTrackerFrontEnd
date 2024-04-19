@@ -330,6 +330,13 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
 
   public getClosestAirport(flightInformation: FlightInformation, rootNode?: AirportNode, bestDistance?: number): Airport{
     if (rootNode == undefined) {
+      if (this.airports == undefined) {
+        return {
+          name: "NULL",
+          icaoCode: "NULL",
+          coordinates: {latitude: flightInformation.location.latitude, longitude: flightInformation.location.longitude,},
+        };
+      }
       rootNode = this.airports;
     }
 
