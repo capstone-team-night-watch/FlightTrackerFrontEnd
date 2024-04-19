@@ -5,6 +5,7 @@ import { PersistenceService } from './persistence.service';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { NoFlyZoneInfo } from 'src/lib/socket-events/no-fly-zone-tracking';
 import { Url } from 'src/lib/utils/url';
+import { FlightInformation } from 'src/lib/socket-events/flight-tracking';
 
 describe('PersistenceService', () => {
   let service: PersistenceService;
@@ -49,11 +50,78 @@ describe('PersistenceService', () => {
       },
     ];
     service.getAllNoFlyZone().then((zones) => {
-      expect(zones.length).toEqual(2);
+      expect(zones).toEqual(expectedData);
     });
 
     const req = httpTestingController.expectOne(Url.consumer('/NoFlyZone'));
     expect(req.request.method).toBe('GET');
-    req.flush(expectedData);
+    req.flush({ data: expectedData });
+  });
+
+  it('should return all active flights', () => {
+    const expectedData: FlightInformation[] = [
+      {
+        flightId: 'flightId',
+        location: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+          altitude: 30,
+        },
+        groundSpeed: 40,
+        heading: 50,
+        source: {
+          name: 'source-name',
+          icaoCode: 'source-icao',
+          coordinates: {
+            latitude: 41.25716,
+            longitude: -95.995102,
+          },
+        },
+        destination: {
+          name: 'destination-name',
+          icaoCode: 'destination-icao',
+          coordinates: {
+            latitude: 41.25716,
+            longitude: -95.995102,
+          },
+        },
+        checkPoints: [0, 1, 2, 3, 4],
+      },
+      {
+        flightId: 'flightId',
+        location: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+          altitude: 30,
+        },
+        groundSpeed: 40,
+        heading: 50,
+        source: {
+          name: 'source-name',
+          icaoCode: 'source-icao',
+          coordinates: {
+            latitude: 41.25716,
+            longitude: -95.995102,
+          },
+        },
+        destination: {
+          name: 'destination-name',
+          icaoCode: 'destination-icao',
+          coordinates: {
+            latitude: 41.25716,
+            longitude: -95.995102,
+          },
+        },
+        checkPoints: [0, 1, 2, 3, 4],
+      },
+    ];
+
+    service.getAllActiveFlight().then((flights) => {
+      expect(flights).toEqual(expectedData);
+    });
+
+    const req = httpTestingController.expectOne(Url.consumer('/Flight'));
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: expectedData });
   });
 });
