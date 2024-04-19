@@ -29,8 +29,8 @@ describe('SimulationController', () => {
   let info: FlightInformation = {
     flightId: 'flightId',
     location: {
-      latitude: 10,
-      longitude: 20,
+      latitude: 41.25716,
+      longitude: -95.995102,
       altitude: 30,
     },
     groundSpeed: 40,
@@ -39,16 +39,16 @@ describe('SimulationController', () => {
       name: 'source-name',
       icaoCode: 'source-icao',
       coordinates: {
-        latitude: 60,
-        longitude: 70,
+        latitude: 41.25716,
+        longitude: -95.995102,
       },
     },
     destination: {
       name: 'destination-name',
       icaoCode: 'destination-icao',
       coordinates: {
-        latitude: 80,
-        longitude: 90,
+        latitude: 41.25716,
+        longitude: -95.995102,
       },
     },
     checkPoints: [0, 1, 2, 3, 4],
@@ -71,8 +71,8 @@ describe('SimulationController', () => {
     {
       flightId: 'flightId',
       location: {
-        latitude: 10,
-        longitude: 20,
+        latitude: 41.25716,
+        longitude: -95.995102,
         altitude: 30,
       },
       groundSpeed: 40,
@@ -81,16 +81,16 @@ describe('SimulationController', () => {
         name: 'source-name',
         icaoCode: 'source-icao',
         coordinates: {
-          latitude: 60,
-          longitude: 70,
+          latitude: 41.25716,
+          longitude: -95.995102,
         },
       },
       destination: {
         name: 'destination-name',
         icaoCode: 'destination-icao',
         coordinates: {
-          latitude: 80,
-          longitude: 90,
+          latitude: 41.25716,
+          longitude: -95.995102,
         },
       },
       checkPoints: [0, 1, 2, 3, 4],
@@ -98,8 +98,8 @@ describe('SimulationController', () => {
     {
       flightId: 'flightId2',
       location: {
-        latitude: 10,
-        longitude: 20,
+        latitude: 41.25716,
+        longitude: -95.995102,
         altitude: 30,
       },
       groundSpeed: 40,
@@ -108,16 +108,16 @@ describe('SimulationController', () => {
         name: 'source-name2',
         icaoCode: 'source-icao2',
         coordinates: {
-          latitude: 60,
-          longitude: 70,
+          latitude: 41.25716,
+          longitude: -95.995102,
         },
       },
       destination: {
         name: 'destination-name2',
         icaoCode: 'destination-icao2',
         coordinates: {
-          latitude: 80,
-          longitude: 90,
+          latitude: 41.25716,
+          longitude: -95.995102,
         },
       },
       checkPoints: [0, 1, 2, 3, 4],
