@@ -1,4 +1,4 @@
-import { Cartesian3, JulianDate } from 'cesium';
+import { Cartesian3, JulianDate, ReferenceFrame } from 'cesium';
 import { DynamicPlanePosition } from './PlanePosition';
 
 describe('DynamicPlanePosition', () => {
@@ -52,5 +52,15 @@ describe('DynamicPlanePosition', () => {
     // Verify that the returned value matches the expected Cartesian3 coordinates
     const expectedCartesian = Cartesian3.fromDegrees(coordinates.longitude, coordinates.latitude, coordinates.altitude);
     expect(value).toEqual(expectedCartesian);
+  });
+
+  it('should return the cartesian3', () => {
+    // Test coverage
+    let cartesian3 = Cartesian3.fromDegrees(coordinates.longitude, coordinates.latitude, coordinates.altitude);
+    expect(dynamicPosition.getValueInReferenceFrame(JulianDate.now(), ReferenceFrame.FIXED)).toEqual(cartesian3);
+  });
+
+  it('should returnn equals', () => {
+    expect(dynamicPosition.equals()).toBeFalsy();
   });
 });
