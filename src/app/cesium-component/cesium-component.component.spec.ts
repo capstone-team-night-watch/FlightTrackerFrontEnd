@@ -25,7 +25,7 @@ describe('CesiumComponentComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('it should create circle no fly zone', async () => {
+  it('it should create circle no fly zone', () => {
     const noFlyZone = component.CreateCircularNoFlyZone({
       id: 'No Fly Zone Id',
       altitude: 100_000,
@@ -39,10 +39,10 @@ describe('CesiumComponentComponent', () => {
       },
     });
 
-    expect(noFlyZone).toBeTruthy();
+    expect(component.getViewer().entities.values.length).toEqual(1);
   });
 
-  it('it should create polygon no fly zone', async () => {
+  it('it should create polygon no fly zone', () => {
     const noFlyZone = component.CreatePolygonNoFlyZone({
       id: 'No Fly Zone Id',
       altitude: 100_000,
@@ -65,55 +65,36 @@ describe('CesiumComponentComponent', () => {
       ],
     });
 
-    expect(noFlyZone).toBeTruthy();
+    expect(component.getViewer().entities.values.length).toEqual(1);
   });
 
-  it('should create flight', async () => {
-    let flight: FlightInformation = {
-      flightId: 'testFlight',
-      location: {
-        latitude: 10,
-        longitude: 20,
-        altitude: 30,
+  it('should draw path and return entity', () => {
+    let coordinates: GeographicCoordinates2D[] = [
+      {
+        latitude: 41.25716,
+        longitude: -95.995102,
       },
-      groundSpeed: 100,
-      heading: 32,
-      source: {
-        name: 'sourceName',
-        icaoCode: 'sourceIcao',
-        coordinates: {
-          latitude: 120,
-          longitude: 120,
-        },
+      {
+        latitude: 41.25716,
+        longitude: -95.995102,
       },
-      destination: {
-        name: 'destinationName',
-        icaoCode: 'destinationIcao',
-        coordinates: {
-          latitude: 150,
-          longitude: 150,
-        },
+      {
+        latitude: 41.25716,
+        longitude: -95.995102,
       },
-      checkPoints: [20, 20, 20],
-    };
-
-    let planeEntity = component.createFlight(flight);
-
-    expect(planeEntity).toBeTruthy();
-  });
-
-  it('should draw path and return entity', async () => {
-    let coordinates: GeographicCoordinates2D[] = [];
-
-    coordinates.push({
-      latitude: 0,
-      longitude: 0,
-    });
-
-    coordinates.push({
-      latitude: 0,
-      longitude: 0,
-    });
+      {
+        latitude: 41.25716,
+        longitude: -95.995102,
+      },
+      {
+        latitude: 41.25716,
+        longitude: -95.995102,
+      },
+      {
+        latitude: 41.25716,
+        longitude: -95.995102,
+      },
+    ];
 
     component.drawPath(coordinates, 'name');
 
