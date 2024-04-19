@@ -136,13 +136,17 @@ export class SimulationController {
   }
 
   private createNoFlyZone(noFlyZoneInfo: NoFlyZoneInfo): void {
-    let noFlyZone = {
-      info: noFlyZoneInfo,
-      cesiumEntity: this.renderer.CreateNoFlyZone(noFlyZoneInfo),
-    } satisfies NoFlyZoneEntity;
+    try {
+      let noFlyZone = {
+        info: noFlyZoneInfo,
+        cesiumEntity: this.renderer.CreateNoFlyZone(noFlyZoneInfo),
+      } satisfies NoFlyZoneEntity;
 
-    this.noFlyZones.push(noFlyZone);
-    this.events.noFlyZoneListUpdated.trigger(this.noFlyZones);
+      this.noFlyZones.push(noFlyZone);
+      this.events.noFlyZoneListUpdated.trigger(this.noFlyZones);
+    } catch(e) {
+      console.log(e);
+    }   
   }
 
   private performServerHealthCheck(): void {
