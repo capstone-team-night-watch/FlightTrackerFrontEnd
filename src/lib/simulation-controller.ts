@@ -124,6 +124,9 @@ export class SimulationController {
 
     this.planes.push(plane);
     this.events.flightListUpdated.trigger(this.planes);
+
+    var nearestAirport = this.renderer.getClosestAirport(flightInformation);
+    this.renderer.drawAlternatePath(flightInformation, nearestAirport);
   }
 
   /**
