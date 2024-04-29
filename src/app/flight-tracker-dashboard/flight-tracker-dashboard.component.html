@@ -1,38 +1,28 @@
 <div class="container">
   <div class="sub-container dashboard">
     <div class="navigation-bar">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 32 32"
-        class="menu-icon"
-      >
-        <path
-          d="M26,3H6A3,3,0,0,0,3,6V26a3,3,0,0,0,3,3H26a3,3,0,0,0,3-3V6A3,3,0,0,0,26,3ZM21,21H11a1,1,0,0,1,0-2H21a1,1,0,0,1,0,2Zm0-4H11a1,1,0,0,1,0-2H21a1,1,0,0,1,0,2Zm0-4H11a1,1,0,0,1,0-2H21a1,1,0,0,1,0,2Z"
-          data-name="hamburger menu"
-        ></path>
-      </svg>
-
       <div class="search-container">
-        <input class="search-field" [formControl]="filter" />
+        <input class="search-field" placeholder="Search Earth" [formControl]="filter" />
+
         <div class="selection">
-          <ul>
-            <div>NoFly Zones</div>
-            <button
-              (click)="simulationRenderer.focus(item.cesiumEntity)"
-              *ngFor="let item of noFlyZones"
-            >
-              {{ item.info.id }}
-            </button>
+          <h1>No Fly Zones</h1>
+          <ul class="list-container custom-scroll-bar">
+            <li class="list-item" *ngFor="let item of noFlyZones">
+              <button (click)="simulationRenderer.focus(item.cesiumEntity)">
+                🙅 🚫 {{ item.info.id }}
+              </button>
+            </li>
           </ul>
 
-          <ul>
-            <div>Flights</div>
-            <button
-              (click)="simulationRenderer.focus(item.cesiumEntity.plane)"
-              *ngFor="let item of flights"
-            >
-              {{ item.flightInformation.flightId }}
-            </button>
+          <h1>Flights</h1>
+          <ul class="list-container custom-sroll-bar">
+            <li class="list-item" *ngFor="let item of flights">
+              <button
+                (click)="simulationRenderer.focus(item.cesiumEntity.plane)"
+              >
+                ✈️ {{ item.flightInformation.flightId }}
+              </button>
+            </li>
           </ul>
         </div>
       </div>
