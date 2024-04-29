@@ -22,6 +22,7 @@ import {
   HorizontalOrigin,
   Cartesian2,
   UrlTemplateImageryProvider,
+  ImageryLayer,
 } from 'cesium';
 import { NoFlyZoneEntity } from 'src/lib/simulation-entities/no-fly-zone';
 import { CircularNoFlyZone, NoFlyZoneInfo, PolygonNoFlyZone } from 'src/lib/socket-events/no-fly-zone-tracking';
@@ -83,13 +84,12 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     Ion.defaultAccessToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMmE5MDI5OS03NDMxLTQxZGQtODhiNi0xODEwZTNkMmNjZjciLCJpZCI6MjA5MjA4LCJpYXQiOjE3MTMzMTIwOTV9.GJMyvAoAoFB3bzZpqQqGFVlhqI5BV1JqoJcJM_0R3h8';
 
-    // @ts-ignore
     const imageryLayer = new ImageryLayer(
       new UrlTemplateImageryProvider({
         url: 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}@2x.png',
       })
     );
-
+    
     // Put initialization code for the Cesium viewer here
     this.viewer = new Viewer(this.cesiumContainer.nativeElement, {
       animation: false,
