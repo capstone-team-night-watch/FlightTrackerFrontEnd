@@ -21,11 +21,6 @@ import {
   VerticalOrigin,
   HorizontalOrigin,
   Cartesian2,
-  EntityCollection,
-  PositionProperty,
-  ImageryLayer,
-  OpenStreetMapImageryProvider,
-  IonImageryProvider,
   UrlTemplateImageryProvider,
 } from 'cesium';
 import { NoFlyZoneEntity } from 'src/lib/simulation-entities/no-fly-zone';
@@ -48,7 +43,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
   private viewer: Viewer;
   @ViewChild('cesiumContainer') cesiumContainer: ElementRef;
 
-  public airports: AirportNode;
+  airports: AirportNode;
 
   constructor(private theme: ThemeService) {}
 
