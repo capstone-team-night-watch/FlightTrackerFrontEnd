@@ -8,6 +8,7 @@ import { DeepReadonly } from 'src/lib/utils/types';
 import { FlightInformation } from 'src/lib/socket-events/flight-tracking';
 import { NoFlyZoneInfo } from 'src/lib/socket-events/no-fly-zone-tracking';
 import { NoFlyZoneEntity } from 'src/lib/simulation-entities/no-fly-zone';
+import { AirportNode } from 'src/lib/simulation-entities/airport-node';
 import { Plane } from 'src/lib/simulation-entities/plane';
 import { PersistenceService } from '../shared/persistence.service';
 
@@ -58,6 +59,8 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
     setTimeout(() => {
       this.simulationController.initialize();
     }, 2000);
+
+    //this.addTestData();
   }
 
   public addTestData(): void {
@@ -181,6 +184,46 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       coordinates: { latitude: 40.641766, longitude: -73.780968 },
     });
 
+    /*
+    for (let i = 0; i < 100; i++) {
+      this.simulationRenderer.createAirport({
+        name: 'AP' + i,
+        icaoCode: 'AP' + i,
+        coordinates: { latitude: Math.random() * 90 - 45, longitude: Math.random() * 360 - 180 },
+      });
+    }
+
+    for (let i = 0; i < 100; i++) {
+      let loopTestFlight = {
+        flightId: 'FL' + i,
+        location: {
+          latitude: Math.random() * 90 - 45,
+          longitude: Math.random() * 360 - 180,
+          altitude: 300,
+        },
+        groundSpeed: 500,
+        heading: Math.random() * 360,
+        source: {
+          name: 'NOAP',
+          icaoCode: 'NOAP',
+          coordinates: { latitude: 0, longitude: 0 },
+        },
+        destination: {
+          name: 'NOAP',
+          icaoCode: 'NOAP',
+          coordinates: { latitude: 0, longitude: 0 },
+        },
+        checkPoints: [0, 0],
+      }
+      this.simulationRenderer.createFlight(loopTestFlight);
+
+      let loopTestAirport = this.simulationRenderer.getClosestAirport(loopTestFlight);
+      if (loopTestAirport != null) {
+        this.simulationRenderer.drawAlternatePath(loopTestFlight, loopTestAirport);
+      }
+    }
+    */
+    
     //this.simulationRenderer.focus(stuff);
   }
 }
