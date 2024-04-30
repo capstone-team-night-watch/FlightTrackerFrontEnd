@@ -1,5 +1,5 @@
 export const environment = {
-    socketUrl : 'https://flighttracker.online:4000',
-    consumerBaseUrl: 'https://flighttracker.online:5000',
-    producerBaseUrl : 'https://flighttracker.online:6000',
+    socketUrl : 'http://flighttracker.online:4000',
+    consumerBaseUrl: 'http://flighttracker.online:5000',
+    producerBaseUrl : 'http://flighttracker.online:6000',
 };
