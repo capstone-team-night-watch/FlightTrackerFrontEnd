@@ -88,12 +88,18 @@ export class SimulationController {
     });
 
     this.socket.on('flight-path-intersect-with-no-fly-zone', (data) => {
+      var nearestAirport = this.renderer.getClosestAirport(data.flightInformation);
+      this.renderer.drawAlternatePath(data.flightInformation, nearestAirport);
+      
       this.events.message.trigger({
         message: `Path of flight with id ${data.flightInformation.flightId} intersect with no fly zone ${data.noFlyZone.id}`,
       });
     });
 
     this.socket.on('flight-entered-no-fly-zone', (data) => {
+      var nearestAirport = this.renderer.getClosestAirport(data.flightInformation);
+      this.renderer.drawAlternatePath(data.flightInformation, nearestAirport);
+      
       this.events.message.trigger({
         message: `Flight with id ${data.flightInformation.flightId} has entered a no fly zone ${data.baseNoFlyZone.id}`,
       });
@@ -130,13 +136,17 @@ export class SimulationController {
   }
 
   private createNoFlyZone(noFlyZoneInfo: NoFlyZoneInfo): void {
-    let noFlyZone = {
-      info: noFlyZoneInfo,
-      cesiumEntity: this.renderer.CreateNoFlyZone(noFlyZoneInfo),
-    } satisfies NoFlyZoneEntity;
+    try {
+      let noFlyZone = {
+        info: noFlyZoneInfo,
+        cesiumEntity: this.renderer.CreateNoFlyZone(noFlyZoneInfo),
+      } satisfies NoFlyZoneEntity;
 
-    this.noFlyZones.push(noFlyZone);
-    this.events.noFlyZoneListUpdated.trigger(this.noFlyZones);
+      this.noFlyZones.push(noFlyZone);
+      this.events.noFlyZoneListUpdated.trigger(this.noFlyZones);
+    } catch(e) {
+      console.log(e);
+    }   
   }
 
   private performServerHealthCheck(): void {
