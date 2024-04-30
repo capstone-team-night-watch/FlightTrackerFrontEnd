@@ -5,8 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppModule } from '../app.module';
 import { Airport, FlightInformation } from 'src/lib/socket-events/flight-tracking';
 import { GeographicCoordinates2D } from 'src/lib/simulation-entities/coordinattes';
-import { BillboardGraphics, Cartesian2, Cartesian3, Entity, JulianDate, VerticalOrigin } from 'cesium';
-import { RenderedFlight } from 'src/lib/simulation-entities/plane';
+import { Cartesian3, Entity, JulianDate, VerticalOrigin } from 'cesium';
 import { NoFlyZoneInfo } from 'src/lib/socket-events/no-fly-zone-tracking';
 import { AirportNode } from 'src/lib/simulation-entities/airport-node';
 
