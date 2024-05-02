@@ -3,7 +3,13 @@ import { PersistenceService } from 'src/app/shared/persistence.service';
 import { UIError } from './error';
 import { SimulationController } from './simulation-controller';
 import { FlightInformation } from './socket-events/flight-tracking';
-import { FlightCreatedMessage, FlightLocationUpdatedMessage } from './socket-events/socket-events-type';
+import {
+  FlightCreatedMessage,
+  FlightEnteredNoFlyZoneMessage,
+  FlightIntersectWithNoFlyZoneMessage,
+  FlightLocationUpdatedMessage,
+  FlightPathUpdateMessage,
+} from './socket-events/socket-events-type';
 
 describe('SimulationController', () => {
   let controller: SimulationController;
@@ -16,6 +22,9 @@ describe('SimulationController', () => {
       'createFlight',
       'CreateNoFlyZone',
       'updateFlightLocation',
+      'updateFlightPath',
+      'drawAlternatePath',
+      'getClosestAirport',
     ]);
     mockPersistenceService = jasmine.createSpyObj('PersistenceService', ['getAllNoFlyZone', 'getAllActiveFlight']);
     mockSocket = {
@@ -184,5 +193,124 @@ describe('SimulationController', () => {
     expect(plane.flightInformation.location).toEqual(mockData.newLocation);
   });
 
-  // Add more test cases for other methods as needed...
+  it('should update flight path on socket event', () => {
+    const data: FlightPathUpdateMessage = {
+      room: 'room-abc',
+      name: 'name-abc',
+      message: 'new-message',
+      flightId: 'flightId',
+      newCheckPoints: [0, 0, 0, 0],
+    };
+
+    // flight-path-updated event
+    const socketFlightPathUpdated = mockSocket.on.calls.argsFor(1)[1];
+    socketFlightPathUpdated(data);
+
+    expect(mockRenderer.updateFlightPath).toHaveBeenCalled();
+  });
+
+  it('should draw alternate path when flight path intersects with no-fly-zone', () => {
+    const data: FlightIntersectWithNoFlyZoneMessage = {
+      room: 'room-abc',
+      name: 'name-abc',
+      message: 'new-message',
+      noFlyZone: {
+        id: '',
+        altitude: 0,
+        createdAt: '',
+        notamNumber: '',
+        type: 'CIRCLE',
+        radius: 5,
+        center: {
+          latitude: 10,
+          longitude: 10,
+        },
+      },
+      flightInformation: {
+        flightId: 'flightId',
+        location: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+          altitude: 30,
+        },
+        groundSpeed: 40,
+        heading: 50,
+        source: {
+          name: 'source-name',
+          icaoCode: 'source-icao',
+          coordinates: {
+            latitude: 41.25716,
+            longitude: -95.995102,
+          },
+        },
+        destination: {
+          name: 'destination-name',
+          icaoCode: 'destination-icao',
+          coordinates: {
+            latitude: 41.25716,
+            longitude: -95.995102,
+          },
+        },
+        checkPoints: [0, 1, 2, 3, 4],
+      },
+    };
+
+    // flight-path-intersect-with-no-fly-zone
+    const socketFlightPathIntersectWithNoFlyZone = mockSocket.on.calls.argsFor(2)[1];
+    socketFlightPathIntersectWithNoFlyZone(data);
+
+    expect(mockRenderer.drawAlternatePath).toHaveBeenCalled();
+  });
+
+  it('should draw alternate path with flight path intersect with no-fly-zone', () => {
+    const data: FlightEnteredNoFlyZoneMessage = {
+      room: 'room-abc',
+      name: 'name-abc',
+      message: 'new-message',
+      baseNoFlyZone: {
+        id: '',
+        altitude: 0,
+        createdAt: '',
+        notamNumber: '',
+        type: 'CIRCLE',
+        radius: 5,
+        center: {
+          latitude: 10,
+          longitude: 10,
+        },
+      },
+      flightInformation: {
+        flightId: 'flightId',
+        location: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+          altitude: 30,
+        },
+        groundSpeed: 40,
+        heading: 50,
+        source: {
+          name: 'source-name',
+          icaoCode: 'source-icao',
+          coordinates: {
+            latitude: 41.25716,
+            longitude: -95.995102,
+          },
+        },
+        destination: {
+          name: 'destination-name',
+          icaoCode: 'destination-icao',
+          coordinates: {
+            latitude: 41.25716,
+            longitude: -95.995102,
+          },
+        },
+        checkPoints: [0, 1, 2, 3],
+      },
+    };
+    // flight-entered-no-fly-zone
+    const socketFlightEnteredNoFlyZone = mockSocket.on.calls.argsFor(3)[1];
+    socketFlightEnteredNoFlyZone(data);
+
+    expect(mockRenderer.drawAlternatePath).toHaveBeenCalled();
+  });
 });

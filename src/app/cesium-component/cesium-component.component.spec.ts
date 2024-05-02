@@ -8,6 +8,8 @@ import { GeographicCoordinates2D } from 'src/lib/simulation-entities/coordinatte
 import { Cartesian3, Entity, JulianDate, VerticalOrigin } from 'cesium';
 import { NoFlyZoneInfo } from 'src/lib/socket-events/no-fly-zone-tracking';
 import { AirportNode } from 'src/lib/simulation-entities/airport-node';
+import { RenderedFlight } from 'src/lib/simulation-entities/plane';
+import { DynamicPlanePosition } from 'src/lib/simulation-entities/PlanePosition';
 
 describe('CesiumComponentComponent', () => {
   let component: CesiumComponentComponent;
@@ -26,6 +28,121 @@ describe('CesiumComponentComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should update flight location', async () => {
+    const flightObject: RenderedFlight = {
+      plane: new Entity({ position: new DynamicPlanePosition({ latitude: 0, longitude: 0, altitude: 0 }) }),
+      planePath: new Entity(),
+    };
+
+    const flight: FlightInformation = {
+      flightId: 'flightId',
+      location: {
+        latitude: 41.25716,
+        longitude: -95.995102,
+        altitude: 30,
+      },
+      groundSpeed: 40,
+      heading: 50,
+      source: {
+        name: 'source-name',
+        icaoCode: 'source-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      destination: {
+        name: 'destination-name',
+        icaoCode: 'destination-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      checkPoints: [0, 1, 2, 3, 4],
+    };
+
+    await component.updateFlightLocation(flightObject, flight);
+
+    const entity = flightObject.plane;
+    const position = entity.position as DynamicPlanePosition;
+
+    expect(position.getCoordinates()).toEqual(
+      Cartesian3.fromDegrees(flight.location.longitude, flight.location.latitude, flight.location.altitude)
+    );
+  });
+
+  it('should update flight path', async () => {
+    const flightObject: RenderedFlight = {
+      plane: new Entity({ position: new DynamicPlanePosition({ latitude: 10, longitude: 10, altitude: 10 }) }),
+      planePath: new Entity(),
+    };
+
+    const flight: FlightInformation = {
+      flightId: 'flightId',
+      location: {
+        latitude: 41.25716,
+        longitude: -95.995102,
+        altitude: 30,
+      },
+      groundSpeed: 40,
+      heading: 50,
+      source: {
+        name: 'source-name',
+        icaoCode: 'source-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      destination: {
+        name: 'destination-name',
+        icaoCode: 'destination-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      checkPoints: [41.25716, 41.25719, 41.25713, 41.257165],
+    };
+
+    await component.updateFlightPath(flightObject, flight);
+
+    expect(flightObject.planePath).toBeTruthy();
+  });
+
+  it('should create flight', async () => {
+    const flight: FlightInformation = {
+      flightId: 'flightId',
+      location: {
+        latitude: 41.25716,
+        longitude: -95.995102,
+        altitude: 30,
+      },
+      groundSpeed: 40,
+      heading: 50,
+      source: {
+        name: 'source-name',
+        icaoCode: 'source-icao',
+        coordinates: {
+          latitude: 41.257168,
+          longitude: -95.9102,
+        },
+      },
+      destination: {
+        name: 'destination-name',
+        icaoCode: 'destination-icao',
+        coordinates: {
+          latitude: 41.2571,
+          longitude: -95.99102,
+        },
+      },
+      checkPoints: [41.2571, 41.2571, 41.2571, 41.2571],
+    };
+
+    component.createFlight(flight).then((res) => expect(res).toBeTruthy());
   });
 
   it('it should create circle no fly zone', () => {
