@@ -45,16 +45,15 @@ export class SimulationController {
     }
 
     for (let flight of allActiveFlight) {
+      this.handleFlightCreated(flight);
       
-      if (flight.flightCollisions.length > 0 || flight.flightPathCollisions.length > 0) {
+      if (flight.flightCollisions != undefined && this.renderer.airports != undefined || flight.flightCollisions != undefined && this.renderer.airports != undefined) {
         let possibleAirports: AirportNode[] = this.renderer.getClosestAirport(flight);
         let closestAirport: Airport | undefined = this.renderer.getClosestValidAirport(flight, possibleAirports)
         if (closestAirport != undefined) {
           this.renderer.drawAlternatePath(flight, closestAirport);
         }
       }
-      
-      this.handleFlightCreated(flight);
     }
 
     this.events.flightListUpdated.trigger(this.planes);
