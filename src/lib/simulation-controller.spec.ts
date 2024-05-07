@@ -23,8 +23,12 @@ describe('SimulationController', () => {
       'CreateNoFlyZone',
       'updateFlightLocation',
       'updateFlightPath',
+      'updateAlternateFlightPath',
       'drawAlternatePath',
       'getClosestAirport',
+      'checkCircularCollision',
+      'checkPolygonCollision',
+      'getClosestValidAirport',
     ]);
     mockPersistenceService = jasmine.createSpyObj('PersistenceService', ['getAllNoFlyZone', 'getAllActiveFlight']);
     mockSocket = {
@@ -60,6 +64,8 @@ describe('SimulationController', () => {
         longitude: -95.995102,
       },
     },
+    flightCollisions: [],
+    flightPathCollisions: [],
     checkPoints: [0, 1, 2, 3, 4],
   };
 
@@ -251,6 +257,8 @@ describe('SimulationController', () => {
             longitude: -95.995102,
           },
         },
+        flightCollisions: [],
+        flightPathCollisions: [],
         checkPoints: [0, 1, 2, 3, 4],
       },
     };
@@ -304,6 +312,8 @@ describe('SimulationController', () => {
             longitude: -95.995102,
           },
         },
+        flightCollisions: [],
+        flightPathCollisions: [],
         checkPoints: [0, 1, 2, 3],
       },
     };

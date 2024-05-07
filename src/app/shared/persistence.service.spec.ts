@@ -85,6 +85,8 @@ describe('PersistenceService', () => {
             longitude: -95.995102,
           },
         },
+        flightCollisions: [],
+        flightPathCollisions: [],
         checkPoints: [0, 1, 2, 3, 4],
       },
       {
@@ -112,6 +114,8 @@ describe('PersistenceService', () => {
             longitude: -95.995102,
           },
         },
+        flightCollisions: [],
+        flightPathCollisions: [],
         checkPoints: [0, 1, 2, 3, 4],
       },
     ];

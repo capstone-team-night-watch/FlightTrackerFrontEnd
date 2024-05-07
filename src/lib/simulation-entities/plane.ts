@@ -10,4 +10,5 @@ export type Plane = {
 export type RenderedFlight = {
   plane: Entity;
   planePath: Entity;
+  alternatePath?: Entity;
 };
