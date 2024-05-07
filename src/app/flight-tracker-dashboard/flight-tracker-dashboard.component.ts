@@ -6,11 +6,12 @@ import { Observable, combineLatest, startWith } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { DeepReadonly } from 'src/lib/utils/types';
 import { FlightInformation } from 'src/lib/socket-events/flight-tracking';
-import { NoFlyZoneInfo } from 'src/lib/socket-events/no-fly-zone-tracking';
+import { PolygonNoFlyZone, CircularNoFlyZone, NoFlyZoneInfo } from 'src/lib/socket-events/no-fly-zone-tracking';
 import { NoFlyZoneEntity } from 'src/lib/simulation-entities/no-fly-zone';
 import { AirportNode } from 'src/lib/simulation-entities/airport-node';
 import { Plane } from 'src/lib/simulation-entities/plane';
 import { PersistenceService } from '../shared/persistence.service';
+import { Cartesian2, Cartesian3 } from 'cesium';
 
 @Component({
   selector: 'app-flight-tracker-dashboard',
@@ -60,20 +61,21 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       this.simulationController.initialize();
     }, 2000);
 
-    //this.addTestData();
+    this.addTestData();
   }
 
   public addTestData(): void {
+    /*
     this.simulationRenderer.CreateCircularNoFlyZone({
       id: 'No Fly Zone Id',
-      altitude: 100_000,
+      altitude: 100,
       createdAt: 'Now brother',
       notamNumber: ' NO Fly zone number',
       type: 'CIRCLE',
-      radius: 300_000,
+      radius: 470000,
       center: {
-        latitude: 41.25716,
-        longitude: -95.995102,
+        latitude: 15,
+        longitude: 8,
       },
     });
 
@@ -85,16 +87,20 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
       type: 'POLYGON',
       vertices: [
         {
-          latitude: 41.25716,
-          longitude: -95.995102,
+          latitude: 42,
+          longitude: -74,
         },
         {
-          latitude: 20.25716,
-          longitude: -95.995102,
+          latitude: 42,
+          longitude: -71,
         },
         {
-          latitude: 30.25716,
-          longitude: -85.995102,
+          latitude: 43,
+          longitude: -71,
+        },
+        {
+          latitude: 43,
+          longitude: -74,
         },
       ],
     });
@@ -120,6 +126,8 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
           coordinates: { latitude: 55, longitude: -80 },
         },
         checkPoints: [35, -60, 45, 75, 55, -80],
+        flightCollisions: [],
+        flightPathCollisions: [],
       },
       {
         name: 'TST3',
@@ -148,6 +156,8 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
         coordinates: { latitude: 55, longitude: -80 },
       },
       checkPoints: [35, -60, 45, -70, 55, -80],
+      flightCollisions: [],
+      flightPathCollisions: [],
     });
 
     this.simulationRenderer.drawTrackedPath(
@@ -171,20 +181,36 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
           coordinates: { latitude: 55, longitude: -80 },
         },
         checkPoints: [45, -60, 40, -65, 45, -70, 50, -75, 55, -80],
+        flightCollisions: [],
+        flightPathCollisions: [],
       },
       [
         { latitude: 43, longitude: -70 },
         { latitude: 47, longitude: -70 },
       ]
     );
-
+    /*
     this.simulationRenderer.createAirport({
       name: 'KJFK',
       icaoCode: 'KJFK',
       coordinates: { latitude: 40.641766, longitude: -73.780968 },
     });
-
+    */
     /*
+    for (let i = 0; i < 30; i++) {
+      let newRandomLat = Math.random() * 80 - 40;
+      let newRandomLong = Math.random() * 340 - 170;
+      let newNoFlyObj: PolygonNoFlyZone = {
+        id: "NF" + i,
+        altitude: 10000,
+        createdAt: "Right here, right now",
+        notamNumber: "" + i,
+        type: 'POLYGON',
+        vertices: [{latitude: newRandomLat - 5, longitude: newRandomLong - 5},{latitude: newRandomLat + 5, longitude: newRandomLong - 5},{latitude: newRandomLat + 5, longitude: newRandomLong + 5},{latitude: newRandomLat - 5, longitude: newRandomLong + 5}],
+      };
+      this.simulationRenderer.CreatePolygonNoFlyZone(newNoFlyObj);
+    }
+    */
     for (let i = 0; i < 100; i++) {
       this.simulationRenderer.createAirport({
         name: 'AP' + i,
@@ -192,7 +218,7 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
         coordinates: { latitude: Math.random() * 90 - 45, longitude: Math.random() * 360 - 180 },
       });
     }
-
+    /*
     for (let i = 0; i < 100; i++) {
       let loopTestFlight = {
         flightId: 'FL' + i,
@@ -213,17 +239,22 @@ export class FlightTrackerDashboardComponent implements AfterViewInit {
           icaoCode: 'NOAP',
           coordinates: { latitude: 0, longitude: 0 },
         },
-        checkPoints: [0, 0],
+        checkPoints: [0, 0, 0, 0],
+        flightCollisions: [],
+        flightPathCollisions: [],
       }
       this.simulationRenderer.createFlight(loopTestFlight);
-
       let loopTestAirport = this.simulationRenderer.getClosestAirport(loopTestFlight);
-      if (loopTestAirport != null) {
-        this.simulationRenderer.drawAlternatePath(loopTestFlight, loopTestAirport);
+      let validAirport = this.simulationRenderer.getClosestValidAirport(loopTestFlight, loopTestAirport);
+      if (validAirport != undefined) {
+        this.simulationRenderer.drawAlternatePath(loopTestFlight, validAirport);
       }
+      
+      
+      //this.simulationRenderer.drawAlternatePath(loopTestFlight, loopTestAirport[0].airportObject);
+      console.log("Airports Found For " + loopTestFlight.flightId + ": " + loopTestAirport[0]?.airportObject.name + ", " + loopTestAirport[1]?.airportObject.name + ", " + loopTestAirport[2]?.airportObject.name + ", " + loopTestAirport[3]?.airportObject.name);
     }
     */
-    
     //this.simulationRenderer.focus(stuff);
   }
 }

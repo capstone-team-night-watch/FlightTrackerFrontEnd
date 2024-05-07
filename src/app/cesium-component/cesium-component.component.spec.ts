@@ -61,6 +61,8 @@ describe('CesiumComponentComponent', () => {
           longitude: -95.995102,
         },
       },
+      flightCollisions: [],
+      flightPathCollisions: [],
       checkPoints: [0, 1, 2, 3, 4],
     };
 
@@ -105,6 +107,8 @@ describe('CesiumComponentComponent', () => {
           longitude: -95.995102,
         },
       },
+      flightCollisions: [],
+      flightPathCollisions: [],
       checkPoints: [41.25716, 41.25719, 41.25713, 41.257165],
     };
 
@@ -139,6 +143,8 @@ describe('CesiumComponentComponent', () => {
           longitude: -95.99102,
         },
       },
+      flightCollisions: [],
+      flightPathCollisions: [],
       checkPoints: [41.2571, 41.2571, 41.2571, 41.2571],
     };
 
@@ -368,10 +374,12 @@ describe('CesiumComponentComponent', () => {
           longitude: -95.995102,
         },
       },
+      flightCollisions: [],
+      flightPathCollisions: [],
       checkPoints: [0, 1, 2, 3, 4],
     };
 
-    let airport = component.getClosestAirport(flightInformation);
+    let airport = component.getClosestAirport(flightInformation)[0].airportObject;
 
     expect(airport).toEqual({
       name: 'NULL',
@@ -406,6 +414,8 @@ describe('CesiumComponentComponent', () => {
           longitude: -95.995102,
         },
       },
+      flightCollisions: [],
+      flightPathCollisions: [],
       checkPoints: [0, 1, 2, 3, 4],
     };
 
@@ -423,7 +433,7 @@ describe('CesiumComponentComponent', () => {
       coords: Cartesian3.packArray([
         Cartesian3.fromDegrees(airport.coordinates.longitude, airport.coordinates.latitude, 0),
       ]),
-      depth: 0,
+      depth: 1,
       leftNode: undefined,
       rightNode: undefined,
     };
@@ -433,7 +443,7 @@ describe('CesiumComponentComponent', () => {
       coords: Cartesian3.packArray([
         Cartesian3.fromDegrees(airport.coordinates.longitude, airport.coordinates.latitude, 0),
       ]),
-      depth: 0,
+      depth: 1,
       leftNode: undefined,
       rightNode: undefined,
     };
@@ -448,7 +458,7 @@ describe('CesiumComponentComponent', () => {
       rightNode: airportRightNode,
     };
 
-    let closestAirport = component.getClosestAirport(flightInformation, airporttNode, 1_000);
+    let closestAirport = component.getClosestAirport(flightInformation, airporttNode)[0].airportObject;
 
     expect(closestAirport).toEqual(airport);
   });

@@ -33,6 +33,17 @@ export type FlightInformation = {
   destination: Airport;
 
   /**
+   * List of no-fly-zones the flight is colliding with.
+   */
+  flightCollisions: flightCollisionData[];
+
+  /**
+   * List of no-fly-zones the flight's path is colliding with.
+   */
+  flightPathCollisions: pathCollisionData[];
+
+
+  /**
    * List of points that the place will go through during the trip
    */
   checkPoints: number[];
@@ -43,3 +54,14 @@ export type Airport = {
   icaoCode: string;
   coordinates: GeographicCoordinates2D;
 };
+
+export type flightCollisionData = {
+  flightId: string;
+  noFlyZone: string;
+}
+
+export type pathCollisionData = {
+  flightId: string;
+  location: string;
+  noFlyZone: string;
+}

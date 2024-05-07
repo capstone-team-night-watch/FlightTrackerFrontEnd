@@ -2,7 +2,7 @@ import { Socket, io } from 'socket.io-client';
 import { SimulationEvent } from './SimulationEvent';
 import { SimulationMessage } from './simulation-events';
 import { Url } from './utils/url';
-import { FlightInformation } from './socket-events/flight-tracking';
+import { FlightInformation, Airport } from './socket-events/flight-tracking';
 import { NoFlyZoneInfo } from './socket-events/no-fly-zone-tracking';
 import { DeepReadonly } from './utils/types';
 import { NoFlyZoneEntity } from './simulation-entities/no-fly-zone';
@@ -12,6 +12,7 @@ import { CesiumComponentComponent } from 'src/app/cesium-component/cesium-compon
 import { ClientToServerEvents, ServerToClientEvents } from './socket-events/socket-events-type';
 import { PersistenceService } from 'src/app/shared/persistence.service';
 import { Observable } from 'rxjs';
+import { AirportNode } from './simulation-entities/airport-node';
 
 export class SimulationController {
   public events = {
@@ -45,6 +46,14 @@ export class SimulationController {
 
     for (let flight of allActiveFlight) {
       this.handleFlightCreated(flight);
+      
+      if (flight.flightCollisions != undefined && this.renderer.airports != undefined || flight.flightCollisions != undefined && this.renderer.airports != undefined) {
+        let possibleAirports: AirportNode[] = this.renderer.getClosestAirport(flight);
+        let closestAirport: Airport | undefined = this.renderer.getClosestValidAirport(flight, possibleAirports)
+        if (closestAirport != undefined) {
+          this.renderer.drawAlternatePath(flight, closestAirport);
+        }
+      }
     }
 
     this.events.flightListUpdated.trigger(this.planes);
@@ -83,13 +92,13 @@ export class SimulationController {
     this.socket.on('flight-path-updated', (data) => {
       var getPlane = this.getPlane(data.flightId);
       getPlane.flightInformation.checkPoints = data.newCheckPoints;
-
+      console.log("Bro loggin' his flight.");
       this.renderer.updateFlightPath(getPlane.cesiumEntity, getPlane.flightInformation);
     });
 
     this.socket.on('flight-path-intersect-with-no-fly-zone', (data) => {
-      var nearestAirport = this.renderer.getClosestAirport(data.flightInformation);
-      this.renderer.drawAlternatePath(data.flightInformation, nearestAirport);
+      var getPlane = this.getPlane(data.flightInformation.flightId);
+      this.renderer.updateAlternateFlightPath(getPlane.cesiumEntity, getPlane.flightInformation)
       
       this.events.message.trigger({
         message: `Path of flight with id ${data.flightInformation.flightId} intersect with no fly zone ${data.noFlyZone.id}`,
@@ -97,8 +106,8 @@ export class SimulationController {
     });
 
     this.socket.on('flight-entered-no-fly-zone', (data) => {
-      var nearestAirport = this.renderer.getClosestAirport(data.flightInformation);
-      this.renderer.drawAlternatePath(data.flightInformation, nearestAirport);
+      var getPlane = this.getPlane(data.flightInformation.flightId);
+      this.renderer.updateAlternateFlightPath(getPlane.cesiumEntity, getPlane.flightInformation);
       
       this.events.message.trigger({
         message: `Flight with id ${data.flightInformation.flightId} has entered a no fly zone ${data.baseNoFlyZone.id}`,
@@ -122,6 +131,7 @@ export class SimulationController {
       cesiumEntity: await this.renderer.createFlight(flightInformation),
     } satisfies Plane;
 
+    this.renderer.updateAlternateFlightPath(plane.cesiumEntity, flightInformation)
     this.planes.push(plane);
     this.events.flightListUpdated.trigger(this.planes);
   }

@@ -23,8 +23,12 @@ describe('SimulationController', () => {
       'CreateNoFlyZone',
       'updateFlightLocation',
       'updateFlightPath',
+      'updateAlternateFlightPath',
       'drawAlternatePath',
       'getClosestAirport',
+      'checkCircularCollision',
+      'checkPolygonCollision',
+      'getClosestValidAirport',
     ]);
     mockPersistenceService = jasmine.createSpyObj('PersistenceService', ['getAllNoFlyZone', 'getAllActiveFlight']);
     mockSocket = {
@@ -60,6 +64,8 @@ describe('SimulationController', () => {
         longitude: -95.995102,
       },
     },
+    flightCollisions: [],
+    flightPathCollisions: [],
     checkPoints: [0, 1, 2, 3, 4],
   };
 
@@ -251,6 +257,8 @@ describe('SimulationController', () => {
             longitude: -95.995102,
           },
         },
+        flightCollisions: [],
+        flightPathCollisions: [],
         checkPoints: [0, 1, 2, 3, 4],
       },
     };
@@ -259,10 +267,10 @@ describe('SimulationController', () => {
     const socketFlightPathIntersectWithNoFlyZone = mockSocket.on.calls.argsFor(2)[1];
     socketFlightPathIntersectWithNoFlyZone(data);
 
-    expect(mockRenderer.drawAlternatePath).toHaveBeenCalled();
+    expect(mockRenderer.updateAlternateFlightPath).toHaveBeenCalled();
   });
 
-  it('should draw alternate path with flight path intersect with no-fly-zone', () => {
+  it('should draw alternate path with flight intersect with no-fly-zone', () => {
     const data: FlightEnteredNoFlyZoneMessage = {
       room: 'room-abc',
       name: 'name-abc',
@@ -304,6 +312,8 @@ describe('SimulationController', () => {
             longitude: -95.995102,
           },
         },
+        flightCollisions: [],
+        flightPathCollisions: [],
         checkPoints: [0, 1, 2, 3],
       },
     };
@@ -311,6 +321,6 @@ describe('SimulationController', () => {
     const socketFlightEnteredNoFlyZone = mockSocket.on.calls.argsFor(3)[1];
     socketFlightEnteredNoFlyZone(data);
 
-    expect(mockRenderer.drawAlternatePath).toHaveBeenCalled();
+    expect(mockRenderer.updateAlternateFlightPath).toHaveBeenCalled();
   });
 });

@@ -23,6 +23,10 @@ import {
   Cartesian2,
   UrlTemplateImageryProvider,
   ImageryLayer,
+  Ray,
+  BoundingSphere,
+  IntersectionTests,
+  Intersections2D,
 } from 'cesium';
 import { NoFlyZoneEntity } from 'src/lib/simulation-entities/no-fly-zone';
 import { CircularNoFlyZone, NoFlyZoneInfo, PolygonNoFlyZone } from 'src/lib/socket-events/no-fly-zone-tracking';
@@ -45,6 +49,8 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
   @ViewChild('cesiumContainer') cesiumContainer: ElementRef;
 
   airports: AirportNode;
+  circleTFRs: CircularNoFlyZone[] = [];
+  polygonTFRs: PolygonNoFlyZone[] = [];
 
   constructor(private theme: ThemeService) {}
 
@@ -66,6 +72,20 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     newPath.parent = flightObject.plane;
 
     flightObject.planePath = newPath;
+  }
+
+  async updateAlternateFlightPath(flightObject: RenderedFlight, flight: FlightInformation): Promise<void> {
+    if (flightObject.alternatePath != undefined) {
+      this.viewer.entities.remove(flightObject.alternatePath);
+    }
+
+    const airportCandidates = this.getClosestAirport(flight);
+    const bestAirport = this.getClosestValidAirport(flight, airportCandidates)
+    if (bestAirport != undefined) {
+      const newPath = this.drawAlternatePath(flight, bestAirport);
+      newPath.parent = flightObject.plane;
+      flightObject.alternatePath = newPath;
+    }
   }
 
   focus(redonlyEntity: DeepReadonly<Entity>): void {
@@ -144,7 +164,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return { plane: newFlight, planePath: path };
   }
 
-  public async drawPlane(flight: FlightInformation): Promise<Entity> {
+  public async drawPlane(flight: FlightInformation, tfrName?: string): Promise<Entity> {
     let newPosition = new DynamicPlanePosition(flight.location);
 
     const pUri = await IonResource.fromAssetId(2541282);
@@ -178,10 +198,17 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
       pixelOffset: Cartesian2.fromElements(20, -57),
     });
 
+    let tfrDescriptor = "This flight is not currently in collision with any no-fly-zone";
+	
+    if (tfrName != undefined) {
+      tfrDescriptor = "This flight is currently in collision with " + tfrName;
+    }
+
     let descriptionProperty = new ConstantProperty();
     descriptionProperty.setValue(`
     <b>This is flight ${flight.flightId}</b><br>
     Heading from ${flight.source?.name} to ${flight.destination?.name}<br>
+    ${tfrDescriptor}<br>
     latitude: ${flight.location.latitude}<br>
     longitude: ${flight.location.longitude}<br>
     altitude: ${flight.location.altitude * 100}<br>
@@ -254,6 +281,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     `);
     newZone.description = descriptionProperty;
 
+    this.circleTFRs.unshift(noFlyZone);
     return newZone;
   }
 
@@ -286,6 +314,7 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     `);
     newZone.description = descriptionProperty;
 
+    this.polygonTFRs.unshift(noFlyZone);
     return newZone;
   }
 
@@ -356,71 +385,79 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return newAirportNode;
   }
 
-  public getClosestAirport(
-    flightInformation: FlightInformation,
-    rootNode?: AirportNode,
-    bestDistance?: number
-  ): Airport {
-    if (rootNode == undefined) {
-      if (this.airports == undefined) {
-        return {
+  public getClosestAirport(flightInformation: FlightInformation, nodeIn?: AirportNode): AirportNode[] {
+    const amountOfAirports = 4;
+
+    if (nodeIn == undefined) {
+      nodeIn = this.airports;
+    }
+
+    if (nodeIn == undefined) {
+      return [{
+        airportObject: {
           name: 'NULL',
           icaoCode: 'NULL',
           coordinates: {
             latitude: flightInformation.location.latitude,
             longitude: flightInformation.location.longitude,
           },
-        };
-      }
-      rootNode = this.airports;
+        },
+        coords: Cartesian3.packArray([
+          Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude, 0),
+        ]),
+        depth: 0,
+        leftNode: undefined,
+        rightNode: undefined,
+      }];
     }
 
-    if (bestDistance == undefined) {
-      bestDistance = Cartesian3.distanceSquared(
-        Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),
-        Cartesian3.unpack(rootNode.coords)
-      );
-    }
-
-    let bestAirport: Airport = rootNode.airportObject;
-    let currentNode: AirportNode = rootNode;
-
+    let returnNodes: AirportNode[] = [nodeIn];
+    let returnDistances: number[] = [Cartesian3.distanceSquared(
+      Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),
+      Cartesian3.unpack(nodeIn.coords))];
     let flightCoords: number[] = Cartesian3.packArray([
       Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),
     ]);
-    let checkNodes: AirportNode[] = [];
-    let alternateNodes: AirportNode[] = [];
+    let candidate: AirportNode | undefined;
+    let alternate: AirportNode | undefined;
 
-    let candidate: AirportNode | undefined = undefined;
-    let alternate: AirportNode | undefined = undefined;
-    let currentDistance: number = 0;
-    while (true) {
-      currentDistance = Cartesian3.distanceSquared(
-        Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),
-        Cartesian3.unpack(currentNode.coords)
-      );
-      if (currentDistance < bestDistance) {
-        bestDistance = currentDistance;
-        bestAirport = currentNode.airportObject;
+    if (flightCoords[nodeIn.depth % 3] < nodeIn.coords[nodeIn.depth % 3]) {
+      if (nodeIn.leftNode != undefined) {
+        candidate = nodeIn.leftNode;
+      }
+      if (nodeIn.rightNode != undefined) {
+        alternate = nodeIn.rightNode;
+      }
+    } else {
+      if (nodeIn.rightNode != undefined) {
+        candidate = nodeIn.rightNode;
+      }
+      if (nodeIn.leftNode != undefined) {
+        alternate = nodeIn.leftNode;
+      }
+    }
+
+    if (candidate != undefined) {
+      let candidateNodes: AirportNode[] = this.getClosestAirport(flightInformation, candidate);
+      let candidateDistances: number[] = [];
+      for (let i = 0; i < candidateNodes.length; i++) {
+        candidateDistances[i] = Cartesian3.distanceSquared(
+          Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),
+          Cartesian3.unpack(candidateNodes[i].coords));
       }
 
-      if (flightCoords[currentNode.depth % 3] < currentNode.coords[currentNode.depth % 3]) {
-        candidate = currentNode.leftNode;
-        alternate = currentNode.rightNode;
-      } else {
-        candidate = currentNode.rightNode;
-        alternate = currentNode.leftNode;
-      }
-
-      if (alternate != undefined) {
-        checkNodes.push(currentNode);
-        alternateNodes.push(alternate);
-      }
-
-      if (candidate != undefined) {
-        currentNode = candidate;
-      } else {
-        break;
+      for (let i = 0; i < candidateNodes.length; i++) {
+        for (let j = 0; j <= returnNodes.length; j++) {
+          if (candidateDistances[i] < returnDistances[Math.clamp(j,0,amountOfAirports-1)] || j == returnNodes.length) {
+            returnNodes.splice(j,0,candidateNodes[i]);
+            returnDistances.splice(j,0,candidateDistances[i]);
+            if (returnNodes.length > amountOfAirports) {
+              returnNodes.pop();
+              returnDistances.pop();
+            }
+            break;
+          }
+        }
       }
     }
 
@@ -430,49 +467,136 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
       flightCoordsArray
     );
 
-    while (alternateNodes.length > 0) {
-      let currentCheck: AirportNode = checkNodes[checkNodes.length - 1];
-      let currentAlternate: AirportNode = alternateNodes[alternateNodes.length - 1];
+    let nodeCoordsArray: number[] = [];
+    Cartesian3.pack(
+      Cartesian3.fromDegrees(
+        nodeIn.airportObject.coordinates.longitude,
+        nodeIn.airportObject.coordinates.latitude
+      ),
+      nodeCoordsArray
+    );
 
-      let nodeCoordsArray: number[] = [];
-      Cartesian3.pack(
-        Cartesian3.fromDegrees(
-          currentCheck.airportObject.coordinates.longitude,
-          currentCheck.airportObject.coordinates.latitude
-        ),
-        nodeCoordsArray
-      );
+    let flightCoordsDimension: number[] = flightCoordsArray.slice();
+    let nodeCoordsDimension: number[] = nodeCoordsArray.slice();
+    let alternateNodes: AirportNode[] = [];
+    let alternateDistances: number[] = [];
 
-      let flightCoordsDimension: number[] = flightCoordsArray.slice();
-      let nodeCoordsDimension: number[] = nodeCoordsArray.slice();
-
-      for (let i = 0; i < 3; i++) {
-        if (i != currentCheck.depth % 3) {
-          flightCoordsDimension[i] = 0;
-          nodeCoordsDimension[i] = 0;
-        }
+    for (let i = 0; i < 3; i++) {
+      if (i != nodeIn.depth % 3) {
+        flightCoordsDimension[i] = 0;
+        nodeCoordsDimension[i] = 0;
       }
-
-      currentDistance = Cartesian3.distanceSquared(
-        Cartesian3.unpack(flightCoordsDimension),
-        Cartesian3.unpack(nodeCoordsDimension)
-      );
-      if (currentDistance <= bestDistance) {
-        let alternateBest = this.getClosestAirport(flightInformation, currentAlternate, bestDistance);
-        let alternateDistance = Cartesian3.distanceSquared(
-          Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),
-          Cartesian3.fromDegrees(alternateBest?.coordinates.longitude, alternateBest?.coordinates.latitude)
-        );
-        if (alternateDistance < bestDistance) {
-          bestDistance = alternateDistance;
-          bestAirport = alternateBest;
-        }
-      }
-      checkNodes.pop();
-      alternateNodes.pop();
     }
 
-    return bestAirport;
+    let radiusCheck = Cartesian3.distanceSquared(
+      Cartesian3.unpack(flightCoordsDimension),
+      Cartesian3.unpack(nodeCoordsDimension)
+    );
+
+    if (radiusCheck <= returnDistances[returnDistances.length - 1] && alternate != undefined) {
+      alternateNodes = this.getClosestAirport(flightInformation, alternate);
+    }
+
+    for (let i = 0; i < alternateNodes.length; i++) {
+      alternateDistances[i] = Cartesian3.distanceSquared(
+        Cartesian3.fromDegrees(flightInformation.location.longitude, flightInformation.location.latitude),
+        Cartesian3.unpack(alternateNodes[i].coords));
+    }
+
+    for (let i = 0; i < alternateNodes.length; i++) {
+      for (let j = 0; j <= returnNodes.length; j++) {
+        if (alternateDistances[i] < returnDistances[Math.clamp(j,0,amountOfAirports-1)] || j == returnNodes.length) {
+          returnNodes.splice(j,0,alternateNodes[i]);
+          returnDistances.splice(j,0,alternateDistances[i]);
+          if (returnNodes.length > amountOfAirports) {
+            returnNodes.pop();
+            returnDistances.pop();
+          }
+          break;
+        }
+      }
+    }
+
+    return returnNodes;
+  }
+
+  public checkCircularCollision(lineStart: Cartesian2, lineEnd: Cartesian2, circleIn: CircularNoFlyZone): boolean{
+    let circleCenter = new Cartesian2(circleIn.center.latitude, circleIn.center.longitude);
+    let lineDirection = new Cartesian2;
+    let pointDirection = new Cartesian2;
+    let clampDot: number;
+    let adjustedLength = new Cartesian2;
+    let finalPosition = new Cartesian2;
+
+    Cartesian2.subtract(lineEnd, lineStart, lineDirection);
+    Cartesian2.subtract(circleCenter, lineStart, pointDirection);
+    clampDot = Math.clamp(Cartesian2.dot(pointDirection, lineDirection) / Cartesian2.dot(lineDirection, lineDirection),0,1);
+    Cartesian2.multiplyByScalar(lineDirection, clampDot, adjustedLength);
+    Cartesian2.add(lineStart, adjustedLength, finalPosition);
+
+    if (Cartesian3.distance(Cartesian3.fromDegrees(circleIn.center.longitude,
+      circleIn.center.latitude), Cartesian3.fromDegrees(finalPosition.y, finalPosition.x))
+      <= circleIn.radius) {
+      console.log(Cartesian3.distance(Cartesian3.fromDegrees(circleIn.center.longitude,
+        circleIn.center.latitude), Cartesian3.fromDegrees(finalPosition.y, finalPosition.x)) + " shorter than " + circleIn.radius);
+
+      return true;
+    }
+    return false;
+  }
+
+  public checkPolygonCollision(lineStart: Cartesian2, lineEnd: Cartesian2, polygonIn: PolygonNoFlyZone): boolean {
+    let collisionResult: Cartesian2 | undefined;
+    for (let i = 1; i <= polygonIn.vertices.length; i++) {
+      collisionResult = Intersections2D.computeLineSegmentLineSegmentIntersection(lineStart.x, lineStart.y, lineEnd.x, lineEnd.y,
+        polygonIn.vertices[i - 1].latitude, polygonIn.vertices[i - 1].longitude,
+        polygonIn.vertices[i % polygonIn.vertices.length].latitude, polygonIn.vertices[i % polygonIn.vertices.length].longitude
+      );
+
+      if (collisionResult != undefined) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  public getClosestValidAirport(flightInformation: FlightInformation, candidateNodes: AirportNode[]): Airport | undefined {
+    let startPoint: Cartesian2 = { x: flightInformation.location.latitude, y: flightInformation.location.longitude } as Cartesian2;
+    let endPoint: Cartesian2;
+    let successFlag: boolean = true;
+
+    for (let i = 0; i < candidateNodes.length; i++) {
+      endPoint = { x: candidateNodes[i].airportObject.coordinates.latitude, y: candidateNodes[i].airportObject.coordinates.longitude } as Cartesian2;
+      successFlag = true;
+      for (let j = 0; j < this.circleTFRs.length; j++) {
+        if (this.checkCircularCollision(startPoint, endPoint, this.circleTFRs[j])) {
+          successFlag = false;
+          for (let k = 0; k < flightInformation.flightCollisions.length; k++) {
+            if (flightInformation.flightCollisions[k].noFlyZone == this.circleTFRs[j].id) {
+              successFlag = true;
+              break;
+            }
+          }
+        }
+      }
+      for (let j = 0; j < this.polygonTFRs.length; j++) {
+        if (this.checkPolygonCollision(startPoint, endPoint, this.polygonTFRs[j])) {
+          successFlag = false;
+          for (let k = 0; k < flightInformation.flightCollisions.length; k++) {
+            if (flightInformation.flightCollisions[k].noFlyZone == this.polygonTFRs[j].id) {
+              successFlag = true;
+              break;
+            }
+          }
+        }
+      }
+      if (successFlag) {
+        return candidateNodes[i].airportObject;
+      }
+    }
+
+    return undefined;
   }
 
   public drawPath(checkpoints: GeographicCoordinates2D[], name: string): Entity {
