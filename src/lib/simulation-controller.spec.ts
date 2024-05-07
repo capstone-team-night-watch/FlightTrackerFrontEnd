@@ -267,10 +267,10 @@ describe('SimulationController', () => {
     const socketFlightPathIntersectWithNoFlyZone = mockSocket.on.calls.argsFor(2)[1];
     socketFlightPathIntersectWithNoFlyZone(data);
 
-    expect(mockRenderer.drawAlternatePath).toHaveBeenCalled();
+    expect(mockRenderer.updateAlternateFlightPath).toHaveBeenCalled();
   });
 
-  it('should draw alternate path with flight path intersect with no-fly-zone', () => {
+  it('should draw alternate path with flight intersect with no-fly-zone', () => {
     const data: FlightEnteredNoFlyZoneMessage = {
       room: 'room-abc',
       name: 'name-abc',
@@ -321,6 +321,6 @@ describe('SimulationController', () => {
     const socketFlightEnteredNoFlyZone = mockSocket.on.calls.argsFor(3)[1];
     socketFlightEnteredNoFlyZone(data);
 
-    expect(mockRenderer.drawAlternatePath).toHaveBeenCalled();
+    expect(mockRenderer.updateAlternateFlightPath).toHaveBeenCalled();
   });
 });

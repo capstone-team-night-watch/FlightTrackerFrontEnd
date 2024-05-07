@@ -107,7 +107,7 @@ export class SimulationController {
 
     this.socket.on('flight-entered-no-fly-zone', (data) => {
       var getPlane = this.getPlane(data.flightInformation.flightId);
-      this.renderer.updateAlternateFlightPath(getPlane.cesiumEntity, getPlane.flightInformation)
+      this.renderer.updateAlternateFlightPath(getPlane.cesiumEntity, getPlane.flightInformation);
       
       this.events.message.trigger({
         message: `Flight with id ${data.flightInformation.flightId} has entered a no fly zone ${data.baseNoFlyZone.id}`,
