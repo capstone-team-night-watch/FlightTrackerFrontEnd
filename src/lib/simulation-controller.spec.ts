@@ -52,6 +52,8 @@ describe('SimulationController', () => {
       },
     },
     checkPoints: [0, 1, 2, 3, 4],
+    flightCollisions: [],
+    flightPathCollisions: [],
   };
 
   let flightCreatedMessage: FlightCreatedMessage = {

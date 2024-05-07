@@ -86,6 +86,8 @@ describe('PersistenceService', () => {
           },
         },
         checkPoints: [0, 1, 2, 3, 4],
+        flightCollisions: [],
+        flightPathCollisions: [],
       },
       {
         flightId: 'flightId',
@@ -113,6 +115,8 @@ describe('PersistenceService', () => {
           },
         },
         checkPoints: [0, 1, 2, 3, 4],
+        flightCollisions: [],
+        flightPathCollisions: [],
       },
     ];
 
