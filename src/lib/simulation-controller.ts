@@ -58,7 +58,7 @@ export class SimulationController {
         flightCollisionsAmount = flight.flightPathCollisions.length;
       }
 
-      if (flightCollisionsAmount > 0 && flightPathCollisionsAmount > 0 && this.renderer.airports != undefined) {
+      if (flightCollisionsAmount > 0 || flightPathCollisionsAmount > 0) {
         let possibleAirports: AirportNode[] = this.renderer.getClosestAirport(flight);
         let closestAirport: Airport | undefined = this.renderer.getClosestValidAirport(flight, possibleAirports)
         if (closestAirport != undefined) {
