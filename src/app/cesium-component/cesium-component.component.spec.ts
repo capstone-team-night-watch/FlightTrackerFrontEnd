@@ -5,8 +5,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppModule } from '../app.module';
 import { Airport, FlightInformation } from 'src/lib/socket-events/flight-tracking';
 import { GeographicCoordinates2D } from 'src/lib/simulation-entities/coordinattes';
-import { Cartesian3, Entity, JulianDate, VerticalOrigin } from 'cesium';
-import { NoFlyZoneInfo } from 'src/lib/socket-events/no-fly-zone-tracking';
+import { Cartesian2, Cartesian3, Entity, JulianDate, VerticalOrigin } from 'cesium';
+import { CircularNoFlyZone, NoFlyZoneInfo, PolygonNoFlyZone } from 'src/lib/socket-events/no-fly-zone-tracking';
 import { AirportNode } from 'src/lib/simulation-entities/airport-node';
 import { RenderedFlight } from 'src/lib/simulation-entities/plane';
 import { DynamicPlanePosition } from 'src/lib/simulation-entities/PlanePosition';
@@ -14,8 +14,11 @@ import { DynamicPlanePosition } from 'src/lib/simulation-entities/PlanePosition'
 describe('CesiumComponentComponent', () => {
   let component: CesiumComponentComponent;
   let fixture: ComponentFixture<CesiumComponentComponent>;
+  let viewerMock: any;
 
   beforeEach(async () => {
+    viewerMock = jasmine.createSpyObj('Viewer', ['remove']);
+
     await TestBed.configureTestingModule({
       imports: [HttpClientModule, AppModule],
       declarations: [CesiumComponentComponent],
@@ -115,6 +118,58 @@ describe('CesiumComponentComponent', () => {
     await component.updateFlightPath(flightObject, flight);
 
     expect(flightObject.planePath).toBeTruthy();
+  });
+
+  it('should update alternate flight path', async () => {
+    const flightObject: RenderedFlight = {
+      plane: new Entity({ position: new DynamicPlanePosition({ latitude: 10, longitude: 10, altitude: 10 }) }),
+      planePath: new Entity(),
+    };
+
+    const flight: FlightInformation = {
+      flightId: 'flightId',
+      location: {
+        latitude: 41.25716,
+        longitude: -95.995102,
+        altitude: 30,
+      },
+      groundSpeed: 40,
+      heading: 50,
+      source: {
+        name: 'source-name',
+        icaoCode: 'source-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      destination: {
+        name: 'destination-name',
+        icaoCode: 'destination-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      flightCollisions: [],
+      flightPathCollisions: [],
+      checkPoints: [41.25716, 41.25719, 41.25713, 41.257165],
+    };
+
+    const airport: Airport = {
+      name: 'Airport-abc',
+      icaoCode: 'Airport-Icao',
+      coordinates: {
+        latitude: 45.4545,
+        longitude: 54.5454,
+      },
+    };
+
+    component.createAirport(airport);
+
+    await component.updateAlternateFlightPath(flightObject, flight);
+
+    expect(flightObject.alternatePath).toBeTruthy();
   });
 
   it('should create flight', async () => {
@@ -461,5 +516,207 @@ describe('CesiumComponentComponent', () => {
     let closestAirport = component.getClosestAirport(flightInformation, airporttNode)[0].airportObject;
 
     expect(closestAirport).toEqual(airport);
+  });
+
+  it('should check circlular collision and return true', () => {
+    let lineStart: Cartesian2 = new Cartesian2(1_000, 1_000);
+    let lineEnd: Cartesian2 = new Cartesian2(3_000, 3_000);
+    let circle: CircularNoFlyZone = {
+      id: 'cirlce-id',
+      altitude: 10_000,
+      createdAt: 'Now',
+      notamNumber: 'circle-notam',
+      type: 'CIRCLE',
+      radius: 5_000,
+      center: {
+        latitude: 2_500,
+        longitude: 2_500,
+      },
+    };
+
+    expect(component.checkCircularCollision(lineStart, lineEnd, circle)).toEqual(true);
+  });
+
+  it('should check polygon collision and return false', () => {
+    let lineStart: Cartesian2 = new Cartesian2(1_000, 1_000);
+    let lineEnd: Cartesian2 = new Cartesian2(3_000, 3_000);
+    let polygon: PolygonNoFlyZone = {
+      id: 'cirlce-id',
+      altitude: 10_000,
+      createdAt: 'Now',
+      notamNumber: 'circle-notam',
+      type: 'POLYGON',
+      vertices: [
+        { latitude: 1_000, longitude: 1_000 },
+        { latitude: 10_500, longitude: 10_500 },
+      ],
+    };
+
+    expect(component.checkPolygonCollision(lineStart, lineEnd, polygon)).toEqual(false);
+  });
+
+  it('should get the closes airport', () => {
+    const flight: FlightInformation = {
+      flightId: 'flightId',
+      location: {
+        latitude: 41.25716,
+        longitude: -95.995102,
+        altitude: 30,
+      },
+      groundSpeed: 40,
+      heading: 50,
+      source: {
+        name: 'source-name',
+        icaoCode: 'source-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      destination: {
+        name: 'destination-name',
+        icaoCode: 'destination-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      flightCollisions: [],
+      flightPathCollisions: [],
+      checkPoints: [41.25716, 41.25719, 41.25713, 41.257165],
+    };
+
+    let airportNode1: AirportNode = {
+      airportObject: {
+        name: 'airport-1',
+        icaoCode: 'airport-1-icao',
+        coordinates: {
+          latitude: 10_000,
+          longitude: 10_000,
+        },
+      },
+      coords: [99.99, 99.99],
+      depth: 1,
+      leftNode: undefined,
+      rightNode: undefined,
+    };
+
+    let airportNode2: AirportNode = {
+      airportObject: {
+        name: 'airport-2',
+        icaoCode: 'airport-2-icao',
+        coordinates: {
+          latitude: 50_000,
+          longitude: -50_000,
+        },
+      },
+      coords: [99.99, 99.99],
+      depth: 1,
+      leftNode: airportNode1,
+      rightNode: undefined,
+    };
+
+    let airportNodes: AirportNode[] = [airportNode1, airportNode2];
+
+    expect(component.getClosestValidAirport(flight, airportNodes)).toEqual(airportNode1.airportObject);
+  });
+
+  it('should draw alternate path', () => {
+    const flight: FlightInformation = {
+      flightId: 'flightId',
+      location: {
+        latitude: 41.25716,
+        longitude: -95.995102,
+        altitude: 30,
+      },
+      groundSpeed: 40,
+      heading: 50,
+      source: {
+        name: 'source-name',
+        icaoCode: 'source-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      destination: {
+        name: 'destination-name',
+        icaoCode: 'destination-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      flightCollisions: [],
+      flightPathCollisions: [],
+      checkPoints: [41.25716, 41.25719, 41.25713, 41.257165],
+    };
+
+    let targetAirport: Airport = {
+      name: 'target-airport',
+      icaoCode: 'target-airport-icao',
+      coordinates: {
+        latitude: 10,
+        longitude: 10,
+      },
+    };
+
+    expect(component.drawAlternatePath(flight, targetAirport)).toBeTruthy();
+  });
+
+  it('should return Jace absolute number', () => {
+    const num = -10;
+    const expectedNum = 10;
+    const num2 = 10;
+
+    expect(component.mathAbs(num)).toEqual(expectedNum);
+    expect(component.mathAbs(num2)).toEqual(expectedNum);
+  });
+
+  it('should draw tracked path', () => {
+    const flight: FlightInformation = {
+      flightId: 'flightId',
+      location: {
+        latitude: 41.25716,
+        longitude: -95.995102,
+        altitude: 30,
+      },
+      groundSpeed: 40,
+      heading: 50,
+      source: {
+        name: 'source-name',
+        icaoCode: 'source-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      destination: {
+        name: 'destination-name',
+        icaoCode: 'destination-icao',
+        coordinates: {
+          latitude: 41.25716,
+          longitude: -95.995102,
+        },
+      },
+      flightCollisions: [],
+      flightPathCollisions: [],
+      checkPoints: [41.25716, 41.25719, 41.25713, 41.257165],
+    };
+
+    const trackedCoords: GeographicCoordinates2D[] = [
+      { latitude: 1, longitude: 1 },
+      { latitude: 2, longitude: 2 },
+      { latitude: 3, longitude: 3 },
+      { latitude: 4, longitude: 4 },
+      { latitude: 5, longitude: 5 },
+      { latitude: 6, longitude: 6 },
+      { latitude: 7, longitude: 7 },
+      { latitude: 8, longitude: 8 },
+      { latitude: 9, longitude: 9 },
+      { latitude: 10, longitude: 10 },
+    ];
+
+    expect(component.drawTrackedPath(flight, trackedCoords)).toBeTruthy();
   });
 });
