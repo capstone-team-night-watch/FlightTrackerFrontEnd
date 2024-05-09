@@ -47,7 +47,18 @@ export class SimulationController {
     for (let flight of allActiveFlight) {
       this.handleFlightCreated(flight);
       
-      if (flight.flightCollisions != undefined && this.renderer.airports != undefined || flight.flightCollisions != undefined && this.renderer.airports != undefined) {
+      let flightCollisionsAmount: number = 0;
+      let flightPathCollisionsAmount: number = 0;
+
+      if (flight.flightCollisions != undefined) {
+        flightCollisionsAmount = flight.flightCollisions.length;
+      }
+
+      if (flight.flightPathCollisions != undefined) {
+        flightCollisionsAmount = flight.flightPathCollisions.length;
+      }
+
+      if (flightCollisionsAmount > 0 || flightPathCollisionsAmount > 0) {
         let possibleAirports: AirportNode[] = this.renderer.getClosestAirport(flight);
         let closestAirport: Airport | undefined = this.renderer.getClosestValidAirport(flight, possibleAirports)
         if (closestAirport != undefined) {
@@ -131,7 +142,6 @@ export class SimulationController {
       cesiumEntity: await this.renderer.createFlight(flightInformation),
     } satisfies Plane;
 
-    this.renderer.updateAlternateFlightPath(plane.cesiumEntity, flightInformation)
     this.planes.push(plane);
     this.events.flightListUpdated.trigger(this.planes);
   }
