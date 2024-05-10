@@ -46,6 +46,10 @@ import { AirportNode } from 'src/lib/simulation-entities/airport-node';
 })
 export class CesiumComponentComponent implements OnInit, AfterViewInit {
   private viewer: Viewer;
+
+  /**
+   * Variable used to create a new Cesium viewer.
+   */
   @ViewChild('cesiumContainer') cesiumContainer: ElementRef;
 
   airports: AirportNode;
@@ -63,6 +67,12 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     position.setCoordinates(flight.location);
   }
 
+  /**
+   * Deletes a flight's old path object, generates and provides it a new path.
+   * 
+   * @param flightObject - The rendered flight object and its paths, as is seen in the Cesium viewer
+   * @param flight - The flight information object
+   */
   async updateFlightPath(flightObject: RenderedFlight, flight: FlightInformation): Promise<void> {
     // TODO: Update this so that it updates the flight location instead of deleting and recreating it
     this.viewer.entities.remove(flightObject.planePath);
@@ -74,6 +84,12 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     flightObject.planePath = newPath;
   }
 
+  /**
+   * Deletes a flight's old alternate path object, generates and provides it a new alternate path.
+   * 
+   * @param flightObject - The rendered flight object and its paths, as is seen in the Cesium viewer
+   * @param flight - The flight information object
+   */
   async updateAlternateFlightPath(flightObject: RenderedFlight, flight: FlightInformation): Promise<void> {
     if (flightObject.alternatePath != undefined) {
       this.viewer.entities.remove(flightObject.alternatePath);
@@ -88,6 +104,11 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Focuses the camera on a specific entity in the viewer.
+   * 
+   * @param redonlyEntity - The entity to focus on in the Cesium viewer
+   */
   focus(redonlyEntity: DeepReadonly<Entity>): void {
     const entity = redonlyEntity as Entity;
 
@@ -96,10 +117,18 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     this.viewer.flyTo(entity, { offset });
   }
 
+  /**
+   * Deletes a no-fly-zone. Never implemented due to lack of necessity.
+   * 
+   * @param zone - No-fly-zone to delete.
+   */
   RemoveNoFlyZone(zone: NoFlyZoneEntity): void {
     throw new Error('Method not implemented.');
   }
 
+  /**
+   * Initializes the Cesium viewer.
+   */
   async ngAfterViewInit(): Promise<void> {
     Ion.defaultAccessToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMmE5MDI5OS03NDMxLTQxZGQtODhiNi0xODEwZTNkMmNjZjciLCJpZCI6MjA5MjA4LCJpYXQiOjE3MTMzMTIwOTV9.GJMyvAoAoFB3bzZpqQqGFVlhqI5BV1JqoJcJM_0R3h8';
@@ -139,12 +168,27 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * Empty method.
+   */
   ngOnInit(): void {}
 
+  /**
+   * Deletes a plane. Never implemented due to lack of necessity.
+   * 
+   * @param plane - The plane to be deleted.
+   */
   RemovePlane(plane: Plane): void {
     throw new Error('Method not implemented.');
   }
 
+  /**
+   * Creates a new plane entity and its associated path entity.
+   * 
+   * @param flight - The flight information object to use for creating the new plane.
+   * 
+   * @returns an array containing a new plane entity and its associated path entity.
+   */
   public async createFlight(flight: FlightInformation): Promise<RenderedFlight> {
     let newFlight = await this.drawPlane(flight);
 
@@ -164,6 +208,14 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return { plane: newFlight, planePath: path };
   }
 
+  /**
+   * Creates a new plane entity and inserts it into the viewer.
+   * 
+   * @param flight - The flight information object to use for creating the new plane.
+   * @param tfrName - What tfr this plane is in collision with.
+   * 
+   * @returns a new plane entity.
+   */
   public async drawPlane(flight: FlightInformation, tfrName?: string): Promise<Entity> {
     let newPosition = new DynamicPlanePosition(flight.location);
 
@@ -222,6 +274,11 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return planeEntity;
   }
 
+  /**
+   * Attaches an early warning image to an entity.
+   * 
+   * @param entity - The entity to attach the early warning image to.
+   */
   public attachEarlyWarning(entity: Entity) {
     entity.billboard = new BillboardGraphics({
       image: 'assets/images/EarlyWarningLabel.png',
@@ -232,6 +289,11 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * Attaches a warning image to an entity.
+   * 
+   * @param entity - The entity to attach the warning image to.
+   */
   public attachWarning(entity: Entity) {
     entity.billboard = new BillboardGraphics({
       image: 'assets/images/WarningLabel.png',
@@ -242,10 +304,22 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * Removes any attached images from an entity.
+   * 
+   * @param entity - Entity whose image to remove.
+   */
   public eraseWarnings(entity: Entity) {
     entity.billboard = undefined;
   }
 
+  /**
+   * Creates either a circular or polygonal no-fly-zone.
+   * 
+   * @param noFlyZone - The no-fly-zone information to use when creating the no-fly-zone.
+   * 
+   * @returns the new no-fly-zone.
+   */
   public CreateNoFlyZone(noFlyZone: NoFlyZoneInfo): Entity {
     if (noFlyZone.type === 'POLYGON') {
       return this.CreatePolygonNoFlyZone(noFlyZone);
@@ -254,6 +328,13 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Creates a new circular no-fly-zone entity and inserts it into the viewer.
+   * 
+   * @param noFlyZone - The no-fly-zone information to use when creating the no-fly-zone.
+   * 
+   * @returns The new no-fly-zone.
+   */
   public CreateCircularNoFlyZone(noFlyZone: CircularNoFlyZone): Entity {
     let newZone = this.viewer.entities.add({
       parent: undefined,
@@ -285,6 +366,13 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return newZone;
   }
 
+  /**
+   * Creates a new polygon no-fly-zone entity and inserts it into the viewer.
+   * 
+   * @param noFlyZone - The no-fly-zone information to use when creating the no-fly-zone.
+   * 
+   * @returns The new no-fly-zone.
+   */
   public CreatePolygonNoFlyZone(noFlyZone: PolygonNoFlyZone): Entity {
     const coordinates = noFlyZone.vertices.map((vertice) => {
       return Cartesian3.fromDegrees(vertice.longitude, vertice.latitude, 0);
@@ -318,6 +406,14 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return newZone;
   }
 
+  /**
+   * Creates a new airport entity and inserts it into the viewer.
+   * Creates an airport node and inserts it into the airport kd tree.
+   * 
+   * @param noFlyZone - The airport information object to use when creating the airport.
+   * 
+   * @returns The new airport node.
+   */
   public createAirport(airportIn: Airport): AirportNode {
     let newAirport = this.viewer.entities.add({
       parent: undefined,
@@ -385,6 +481,14 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return newAirportNode;
   }
 
+  /**
+   * Searches the airport kd tree to find the nearest n airports, determined by the amountOfAirports constant.
+   * 
+   * @param flightInformation - The flight information object whose position will be used when finding nearest airports.
+   * @param nodeIn - The node where the function will start searching from. For recursion.
+   * 
+   * @returns The closest n airports to the flight provided.
+   */
   public getClosestAirport(flightInformation: FlightInformation, nodeIn?: AirportNode): AirportNode[] {
     const amountOfAirports = 4;
 
@@ -520,6 +624,15 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return returnNodes;
   }
 
+  /**
+   * Checks the nearest point on a line to the center of a circular no-fly-zone to see if that point is within the circle's radius.
+   * 
+   * @param lineStart - The first point of the line segment.
+   * @param lineEnd - The second point of the line segment.
+   * @param circleIn - The circular no-fly-zone to check against.
+   * 
+   * @returns true if a collision occurs, false otherwise.
+   */
   public checkCircularCollision(lineStart: Cartesian2, lineEnd: Cartesian2, circleIn: CircularNoFlyZone): boolean{
     let circleCenter = new Cartesian2(circleIn.center.latitude, circleIn.center.longitude);
     let lineDirection = new Cartesian2;
@@ -545,6 +658,15 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return false;
   }
 
+  /**
+   * Checks if a line intersects with any of the lines making up the boundary of a polygon no-fly-zone.
+   * 
+   * @param lineStart - The first point of the line segment.
+   * @param lineEnd - The second point of the line segment.
+   * @param circleIn - The polygon no-fly-zone to check against.
+   * 
+   * @returns true if a collision occurs, false otherwise.
+   */
   public checkPolygonCollision(lineStart: Cartesian2, lineEnd: Cartesian2, polygonIn: PolygonNoFlyZone): boolean {
     let collisionResult: Cartesian2 | undefined;
     for (let i = 1; i <= polygonIn.vertices.length; i++) {
@@ -561,6 +683,14 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return false;
   }
 
+  /**
+   * Takes an array of airport nodes and checks to see which is closest to a flight without the path between intersecting a no-fly-zone.
+   * 
+   * @param flightInformation - The flight information object.
+   * @param candidateNodes - The nodes to be tested.
+   * 
+   * @returns The closest unobstructed airport object to the flight. If all airports are obstructed, returns undefined.
+   */
   public getClosestValidAirport(flightInformation: FlightInformation, candidateNodes: AirportNode[]): Airport | undefined {
     let startPoint: Cartesian2 = { x: flightInformation.location.latitude, y: flightInformation.location.longitude } as Cartesian2;
     let endPoint: Cartesian2;
@@ -599,6 +729,14 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return undefined;
   }
 
+  /**
+   * Draws and inserts a flight's entire path based on that flight's checkpoint data.
+   * 
+   * @param checkpoints - The checkpoint data to use to draw the path.
+   * @param name - The name of the flight that the path belongs to.
+   * 
+   * @returns The completed path entity.
+   */
   public drawPath(checkpoints: GeographicCoordinates2D[], name: string): Entity {
     const times = checkpoints.map((_, index) => index / (checkpoints.length - 1));
 
@@ -637,10 +775,23 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return newLine;
   }
 
+  /**
+   * Removes an entity from the Cesium viewer.
+   * 
+   * @param entity - The entity to be removed.
+   */
   public removePath(entity: Entity) {
     this.viewer.entities.remove(entity);
   }
 
+  /**
+   * Draws and inserts a flight's alternate path based on the flight's current position and a provided airport's position.
+   * 
+   * @param flight - The flight data to use as the line's first point.
+   * @param targetAirport - The airport data to use as the line's second point.
+   * 
+   * @returns The completed path entity.
+   */
   public drawAlternatePath(flight: FlightInformation, targetAirport: Airport): Entity {
     let planeCoords = Cartesian3.fromDegrees(flight.location.longitude, flight.location.latitude, 0);
     let airportCoords = Cartesian3.fromDegrees(
@@ -674,10 +825,13 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return newAlt;
   }
 
-  //For some reason known only to God, and maybe Komlan,
-  //my Math object does not have an abs or sqrt method, among others.
-  //
-  //This is me giving up.
+  /**
+   * A workaround for our version of typescript's Math object not having an abs method. Returns the absolute value of a number.
+   * 
+   * @param numIn - The number to make absolute.
+   * 
+   * @returns An absolute number.
+   */
   public mathAbs(numIn: number): number {
     if (numIn < 0) {
       return -numIn;
@@ -685,6 +839,14 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return numIn;
   }
 
+  /**
+   * Combine's a flight's previous checkpoint data with its predicted checkpoint data to produce a single cohesive path.
+   * 
+   * @param flight - Flight object containing predicted checkpoint data to be used.
+   * @param trackedCoords - Previous checkpoint data to be used.
+   * 
+   * @returns The completed path entity.
+   */
   public drawTrackedPath(flight: FlightInformation, trackedCoords: GeographicCoordinates2D[]) {
     let startCutIndex;
     let startCutManhattanDistance;
@@ -763,6 +925,11 @@ export class CesiumComponentComponent implements OnInit, AfterViewInit {
     return newTrackedLine;
   }
 
+  /**
+   * Gets the Cesium viewer.
+   * 
+   * @returns the Cesium viewer.
+   */
   public getViewer() {
     return this.viewer;
   }
