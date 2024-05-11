@@ -32,10 +32,6 @@ This is our Angular frontend application for our flight tracker. It receives dat
 
 ## Release Notes
 
-Milestone 2: User interface has been revamped to remove the topbar and its unnecessary features, meaning users no longer need to scroll between the topbar and view to use the application. Kubernetes configuration has been completed following the dockerization of all 3 applications, including the frontend. Flight and no-fly-zone data injection now produce visualizations of flights and no-fly-zones on the globe, with an overlaid list showing the names of all objects currently on the globe. Mock flight data is located in our utilities repository, minimizing reliance on a live API for development and reducing development costs. Full flight route visualization is complete, including predictive flight route analysis, but is not yet integrated into the simulation controller. Frontend application can be run by itself using the `ng serve` command.
-
-## Versions 
-
 Milestone 1:  
 Apache Kafka has been configured  
 SonarQube has been configured  
